@@ -1,0 +1,14 @@
+# Compute-oriented hybrid NVIDIA setup.
+# Keep normal GUI apps on Intel/Mesa and leave AQ_DRM_DEVICES unset unless you
+# intentionally pin stable /dev/dri/cardX nodes.
+env = DRI_PRIME,0
+env = __EGL_VENDOR_LIBRARY_FILENAMES,/usr/share/glvnd/egl_vendor.d/50_mesa.json
+env = VK_DRIVER_FILES,/usr/share/vulkan/icd.d/intel_icd.json
+env = VK_ICD_FILENAMES,/usr/share/vulkan/icd.d/intel_icd.json
+env = GSK_RENDERER,ngl
+
+# Keep unset by default. Static card numbering can break across GPU mode changes.
+#env = AQ_DRM_DEVICES,/dev/dri/card0
+
+# NVIDIA-only GUI offload examples. Use per-command, not globally, in this setup.
+# __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia your_program

@@ -1,0 +1,7 @@
+# ASUS/TLP power profile cycling.
+bind = , F5, exec, $UserScripts/toggle-asus-profile.sh
+bind = , xf86Launch4, exec, $UserScripts/toggle-asus-profile.sh
+bind = $mainMod ALT, P, exec, $UserScripts/toggle-asus-profile.sh
+
+# Battery charge threshold cycling, if using the waybar-power-status module.
+bind = , xf86Launch1, exec, $UserScripts/battery-toggle.sh

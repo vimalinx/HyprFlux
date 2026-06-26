@@ -1,0 +1,13 @@
+# Keep automatic watchers disabled unless you have verified they do not fight
+# the manual F5 ASUS/TLP profile stack.
+
+# Disabled: allow systemd-logind to suspend on lid close instead of keeping the
+# laptop awake.
+# exec-once = systemctl --user start low-power-lid.service
+
+# Disabled: old watcher fights the TLP/F5 profile script and rewrites refresh.
+# exec-once = $scriptsDir/power-mode-watch.sh
+
+# Disabled: automatic GPU mode policy can request supergfx mode changes during
+# session startup and can cause login/session churn.
+# exec-once = $scriptsDir/gpu-power-policy.sh --watch

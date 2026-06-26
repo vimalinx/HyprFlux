@@ -1,0 +1,13 @@
+[Unit]
+Description=Keep Hyprland running on lid close while low-power profile is active
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.config/hypr/UserScripts/low-power-lid.sh --daemon
+Restart=on-failure
+RestartSec=2
+Environment=LOW_POWER_LID_POLL_INTERVAL=1
+
+[Install]
+WantedBy=default.target

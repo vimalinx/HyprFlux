@@ -11,6 +11,11 @@ HyprFlux is a public collection of the small desktop customizations that proved 
 - A low-power Waybar CAVA visualizer that stays idle until audio is playing.
 - A Waybar desktop-agent status module for Codex, Claude Code, OMP, OpenClaw, Hermes, and browser agents.
 - A PipeWire low-gain virtual microphone for clipping-safe calls and recording.
+- Hybrid NVIDIA setup where GUI apps stay on Intel/Mesa while CUDA remains available.
+- ASUS/TLP power profile cycling and balanced boot defaults.
+- Waybar battery limit and platform/TLP profile indicators.
+- Battery-aware Hypridle lock, DPMS, and suspend policy.
+- Optional low-power lid-close behavior for keeping Hyprland alive only in Quiet/power-saver mode.
 - Tmux status styling from a Wallust/Kitty palette.
 - Optional foot/tmux workspace restore scripts.
 - Clipboard history as user systemd services.
@@ -26,6 +31,11 @@ modules/
   waybar-cava-lowpower/
   waybar-agent-status/
   safe-mic-lowgain/
+  nvidia-hybrid-compute/
+  asus-tlp-power-stack/
+  waybar-power-status/
+  hypridle-power-policy/
+  low-power-lid-optional/
   tmux-wallust/
   foot-workspace-restore/
   clipboard-systemd/

@@ -1,0 +1,46 @@
+# ASUS ROG Zephyrus G16 style profile.
+# Keep supergfxctl/asusd responsible for GPU mode switching.
+
+TLP_ENABLE=1
+TLP_DEFAULT_MODE=AC
+TLP_PERSISTENT_DEFAULT=0
+TLP_PROFILE_AC=BAL
+
+# TLP-PD maps profiles as performance=AC, balanced=BAT, power-saver=SAV.
+# Keep platform profile names aligned so one key can cycle cleanly.
+PLATFORM_PROFILE_ON_AC=performance
+PLATFORM_PROFILE_ON_BAT=balanced
+PLATFORM_PROFILE_ON_SAV=quiet
+
+# Intel Core Ultra with intel_pstate active mode.
+CPU_DRIVER_OPMODE_ON_AC=active
+CPU_DRIVER_OPMODE_ON_BAT=active
+CPU_DRIVER_OPMODE_ON_SAV=active
+CPU_SCALING_GOVERNOR_ON_AC=powersave
+CPU_SCALING_GOVERNOR_ON_BAT=powersave
+CPU_SCALING_GOVERNOR_ON_SAV=powersave
+CPU_ENERGY_PERF_POLICY_ON_AC=balance_performance
+CPU_ENERGY_PERF_POLICY_ON_BAT=balance_power
+CPU_ENERGY_PERF_POLICY_ON_SAV=power
+
+CPU_MIN_PERF_ON_AC=0
+CPU_MAX_PERF_ON_AC=100
+CPU_MIN_PERF_ON_BAT=0
+CPU_MAX_PERF_ON_BAT=80
+CPU_MIN_PERF_ON_SAV=0
+CPU_MAX_PERF_ON_SAV=20
+
+CPU_BOOST_ON_AC=1
+CPU_BOOST_ON_BAT=0
+CPU_BOOST_ON_SAV=0
+CPU_HWP_DYN_BOOST_ON_AC=1
+CPU_HWP_DYN_BOOST_ON_BAT=0
+CPU_HWP_DYN_BOOST_ON_SAV=0
+
+# Use TLP defaults for PCIe runtime PM unless you have a measured reason to
+# override. On hybrid NVIDIA laptops, aggressive runtime PM can wake or break
+# devices if applied blindly.
+PCIE_ASPM_ON_AC=default
+PCIE_ASPM_ON_BAT=default
+RUNTIME_PM_ON_AC=on
+RUNTIME_PM_ON_BAT=auto

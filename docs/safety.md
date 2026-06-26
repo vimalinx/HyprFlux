@@ -16,6 +16,8 @@ Avoid copying these files directly into public repos:
 Several modules affect live desktop behavior:
 
 - PipeWire audio routing can change the default microphone.
+- NVIDIA modprobe and TLP drop-ins are system-level files and can affect boot, GPU offload, CUDA, runtime power, and display behavior.
+- ASUS/TLP power scripts can change refresh rate, brightness, radios, Bluetooth, blur, and battery charge thresholds.
 - Startup restore scripts can reopen terminals and increase login-time load.
 - Waybar scripts may scan process tables or Hyprland clients.
 - Clipboard services should not be duplicated with old `exec-once wl-paste` lines.

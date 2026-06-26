@@ -1,0 +1,13 @@
+# Strict compute-only NVIDIA template.
+# Use only if you intentionally do not want NVIDIA display/KMS modules.
+# This can conflict with supergfxd's generated nvidia-drm modeset config.
+
+blacklist nvidia_drm
+blacklist nvidia_modeset
+install nvidia_drm /usr/bin/false
+install nvidia_modeset /usr/bin/false
+
+options nvidia NVreg_DynamicPowerManagement=0x02
+
+# Defensive fallback if nvidia_drm is ever allowed again.
+options nvidia_drm modeset=0 fbdev=0

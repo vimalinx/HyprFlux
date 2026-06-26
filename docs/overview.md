@@ -15,3 +15,5 @@ HyprFlux is a desktop-customization collection extracted from a real Hyprland wo
 The initial modules were extracted from local Hyprland, Waybar, PipeWire, tmux, systemd user, and Codex notification configuration on an Arch/Hyprland machine.
 
 Private files were not copied wholesale. Shell startup files such as `.bashrc` and `.zshrc` were treated as unsafe sources and only safe ideas were represented as standalone snippets or documentation.
+
+The second pass added NVIDIA hybrid-compute and system-power modules from live, read-only evidence: GUI-on-iGPU environment settings, NVIDIA compute/runtime-PM templates, ASUS/TLP profile mapping, Waybar power status, battery-aware Hypridle behavior, and an optional low-power lid service.
