@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source_name="${1:-effect_output.hyprflux-mic-lowgain}"
+
+for _ in {1..50}; do
+  source_id="$(
+    pw-dump | jq -r --arg name "$source_name" '
+      .[]
+      | select(.type == "PipeWire:Interface:Node")
+      | select(.info.props."node.name" == $name)
+      | .id
+    ' | head -n1
+  )"
+
+  if [[ "$source_id" =~ ^[0-9]+$ ]]; then
+    wpctl set-default "$source_id"
+    pactl set-default-source "$source_name"
+    exit 0
+  fi
+
+  sleep 0.2
+done
+
+echo "safe mic source not found: $source_name" >&2
+exit 1

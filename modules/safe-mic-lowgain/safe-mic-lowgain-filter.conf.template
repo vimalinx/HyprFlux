@@ -1,0 +1,53 @@
+context.properties = {
+    log.level = 0
+}
+
+context.spa-libs = {
+    audio.convert.* = audioconvert/libspa-audioconvert
+    support.*       = support/libspa-support
+}
+
+context.modules = [
+    { name = libpipewire-module-rt
+        flags = [ ifexists nofail ]
+    }
+    { name = libpipewire-module-protocol-native }
+    { name = libpipewire-module-client-node }
+    { name = libpipewire-module-adapter }
+    { name = libpipewire-module-filter-chain
+        args = {
+            node.description = "Safe Low Gain Microphone"
+            media.name       = "Safe Low Gain Microphone"
+            filter.graph = {
+                nodes = [
+                    {
+                        name   = gainL
+                        type   = builtin
+                        label  = mixer
+                        control = { "Gain 1" = 0.70 }
+                    }
+                    {
+                        name   = gainR
+                        type   = builtin
+                        label  = mixer
+                        control = { "Gain 1" = 0.70 }
+                    }
+                ]
+                inputs  = [ "gainL:In 1" "gainR:In 1" ]
+                outputs = [ "gainL:Out" "gainR:Out" ]
+            }
+            capture.props = {
+                node.name      = "effect_input.hyprflux-mic-lowgain"
+                audio.position = [ FL FR ]
+                node.target    = "REPLACE_WITH_REAL_INPUT_SOURCE"
+                node.passive   = true
+            }
+            playback.props = {
+                node.name        = "effect_output.hyprflux-mic-lowgain"
+                node.description = "Safe Low Gain Microphone"
+                media.class      = "Audio/Source"
+                audio.position   = [ FL FR ]
+            }
+        }
+    }
+]

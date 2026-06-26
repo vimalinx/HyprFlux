@@ -1,0 +1,15 @@
+.DS_Store
+*.swp
+*.swo
+*.tmp
+*.bak
+*.local
+.env
+.env.*
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+node_modules/
+dist/
+build/
+coverage/

@@ -1,0 +1,7 @@
+"custom/agent_status": {
+  "exec": "bash $HOME/.config/hypr/scripts/waybar-agent-status.sh",
+  "return-type": "json",
+  "interval": 5,
+  "format": "{}",
+  "tooltip": true
+}

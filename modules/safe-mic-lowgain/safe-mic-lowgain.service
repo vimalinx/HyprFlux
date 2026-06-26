@@ -1,0 +1,14 @@
+[Unit]
+Description=Safe low-gain virtual microphone
+After=pipewire.service pipewire-pulse.service wireplumber.service
+Wants=pipewire.service pipewire-pulse.service wireplumber.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pipewire -c %h/.config/pipewire/safe-mic-lowgain-filter.conf
+ExecStartPost=%h/.local/bin/safe-mic-set-default effect_output.hyprflux-mic-lowgain
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

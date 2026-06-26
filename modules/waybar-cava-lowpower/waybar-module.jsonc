@@ -1,0 +1,5 @@
+"custom/cava_mviz": {
+  "exec": "$HOME/.config/hypr/scripts/WaybarCava.sh",
+  "format": "{}",
+  "restart-interval": 2
+}

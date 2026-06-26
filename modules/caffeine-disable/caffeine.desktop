@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Caffeine-ng
+Comment=Disabled by user in favor of Waybar idle_inhibitor
+Hidden=true
+NoDisplay=true
+X-GNOME-Autostart-enabled=false
