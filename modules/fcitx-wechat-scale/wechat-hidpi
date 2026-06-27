@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+scale="${WECHAT_SCALE_FACTOR:-1.6}"
+fcitx_scale_script="${HOME}/.config/hypr/UserScripts/FcitxWechatCandidateScale.sh"
+wechat_binary="${WECHAT_BINARY:-/opt/wechat/wechat}"
+
+if command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+  existing_addr="$(hyprctl -j clients 2>/dev/null | jq -r '.[] | select(.class == "wechat") | .address' | head -n1)"
+  detected_scale="$(hyprctl -j monitors 2>/dev/null | jq -r '.[] | select(.focused == true) | .scale' | head -n1)"
+
+  if [[ -n "${existing_addr}" && "${existing_addr}" != "null" ]]; then
+    if [[ -x "${fcitx_scale_script}" ]]; then
+      "${fcitx_scale_script}" --set wechat >/dev/null 2>&1 || true
+    fi
+    hyprctl dispatch focuswindow "address:${existing_addr}" >/dev/null 2>&1 || true
+    exit 0
+  fi
+
+  if [[ -n "${detected_scale}" && "${detected_scale}" != "null" ]]; then
+    scale="${detected_scale}"
+  fi
+fi
+
+export QT_AUTO_SCREEN_SCALE_FACTOR=0
+export QT_SCALE_FACTOR="${scale}"
+export QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough
+export GDK_SCALE=1
+export GTK_IM_MODULE="${GTK_IM_MODULE:-fcitx}"
+export QT_IM_MODULE="${QT_IM_MODULE:-fcitx}"
+export XMODIFIERS="${XMODIFIERS:-@im=fcitx}"
+
+if [[ -x "${fcitx_scale_script}" ]]; then
+  "${fcitx_scale_script}" --set wechat >/dev/null 2>&1 || true
+fi
+
+exec "$wechat_binary" "$@"

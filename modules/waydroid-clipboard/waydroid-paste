@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+type_cmd="${WAYDROID_TYPE_CMD:-$HOME/.local/bin/waydroid-type}"
+
+if command -v wl-paste >/dev/null 2>&1; then
+  wl-paste --no-newline | "$type_cmd"
+else
+  "$type_cmd"
+fi

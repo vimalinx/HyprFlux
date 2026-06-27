@@ -44,6 +44,38 @@ Battery-aware Hypridle lock, DPMS, and suspend snippet. Suspends only when UPowe
 
 Optional user service that blocks lid-close suspend only while a low-power profile is active. Disabled by default in the source setup.
 
+## wallpaper-swww-restore
+
+Robust `swww` wallpaper restore that starts the daemon, applies per-monitor wallpaper, keeps Rofi/Hyprland wallpaper pointers in sync, and reapplies when monitors change.
+
+## fcitx-wechat-scale
+
+Fcitx5 classic UI font scaler for WeChat focus plus a native WeChat HiDPI launcher that detects monitor scale and focuses an existing WeChat window.
+
+## quickshell-on-demand
+
+Quickshell helper that starts `qs` only when overview/status-panel IPC calls are needed, with keybind, gesture, and Waybar snippets.
+
+## satty-screenshot
+
+Annotated screenshot workflow using `hyprshot` and `satty`, plus optional GPU Screen Recorder keybind snippets.
+
+## waydroid-clipboard
+
+Host-to-Waydroid paste bridge that sends Wayland clipboard text through ADB Keyboard.
+
+## swaync-igpu-systemd
+
+SwayNC systemd user drop-in that keeps the notification daemon on Intel/Mesa and documents disabling direct Hyprland `exec-once = swaync` startup.
+
+## sddm-intel-greeter
+
+Optional SDDM X11 greeter template that pins the login greeter to Intel iGPU to avoid waking the NVIDIA card before session start.
+
+## hypr-window-polish
+
+Selected public-safe Hyprland window/layer snippets: fullscreen idle inhibit, picture-in-picture, dialogs, no-blur rules, layer blur, gestures, XWayland scaling, and cursor behavior.
+
 ## tmux-wallust
 
 Tmux config snippet and theme script that read colors from a Kitty/Wallust palette without heavy status-line polling.

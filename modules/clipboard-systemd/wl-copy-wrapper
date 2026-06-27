@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# wl-copy wrapper: avoid wl-clipboard's xdg-mime/xprop path under Hyprland.
+#
+# Without an explicit MIME type, wl-copy may call xdg-mime, which can call
+# xprop and hang under lazy XWayland startup. This wrapper uses file(1) for
+# stdin payloads, while forcing positional text arguments to text/plain.
+
+set -euo pipefail
+
+real="${WL_COPY_REAL:-/usr/bin/wl-copy}"
+
+for arg in "$@"; do
+  case "$arg" in
+    -t|--type|-t=*|--type=*) exec "$real" "$@" ;;
+  esac
+done
+
+for arg in "$@"; do
+  case "$arg" in
+    -c|--clear|-h|--help|-v|--version) exec "$real" "$@" ;;
+  esac
+done
+
+skip_next=0
+for arg in "$@"; do
+  if [ "$skip_next" -eq 1 ]; then
+    skip_next=0
+    continue
+  fi
+
+  case "$arg" in
+    --)
+      exec "$real" -t text/plain "$@"
+      ;;
+    -s|--seat)
+      skip_next=1
+      ;;
+    -s=*|--seat=*)
+      ;;
+    -*)
+      ;;
+    *)
+      exec "$real" -t text/plain "$@"
+      ;;
+  esac
+done
+
+if [ -t 0 ]; then
+  exec "$real" "$@"
+fi
+
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+cat > "$tmp"
+
+mime="$(file --mime-type -b "$tmp")"
+case "$mime" in
+  inode/x-empty)
+    mime='text/plain'
+    ;;
+  application/octet-stream)
+    grep -qI . "$tmp" 2>/dev/null && mime='text/plain'
+    ;;
+esac
+
+exec "$real" -t "$mime" "$@" < "$tmp"

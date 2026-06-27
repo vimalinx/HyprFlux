@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+adb_target="${WAYDROID_ADB_TARGET:-192.168.240.2:5555}"
+adb_ime="${WAYDROID_ADB_IME:-com.android.adbkeyboard/.AdbIME}"
+
+if [ "$#" -gt 0 ]; then
+  text="$*"
+else
+  text="$(cat)"
+fi
+
+if [ -z "$text" ]; then
+  exit 0
+fi
+
+adb -s "$adb_target" shell ime enable "$adb_ime" >/dev/null 2>&1 || true
+adb -s "$adb_target" shell ime set "$adb_ime" >/dev/null
+
+b64="$(printf '%s' "$text" | base64 -w0)"
+adb -s "$adb_target" shell am broadcast -a ADB_INPUT_B64 --es msg "$b64" >/dev/null

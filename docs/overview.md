@@ -17,3 +17,5 @@ The initial modules were extracted from local Hyprland, Waybar, PipeWire, tmux, 
 Private files were not copied wholesale. Shell startup files such as `.bashrc` and `.zshrc` were treated as unsafe sources and only safe ideas were represented as standalone snippets or documentation.
 
 The second pass added NVIDIA hybrid-compute and system-power modules from live, read-only evidence: GUI-on-iGPU environment settings, NVIDIA compute/runtime-PM templates, ASUS/TLP profile mapping, Waybar power status, battery-aware Hypridle behavior, and an optional low-power lid service.
+
+The third pass added remaining public-safe desktop polish modules: `swww` wallpaper restore, Fcitx/WeChat scaling, Quickshell on-demand startup, Satty screenshots, Waydroid clipboard bridge, SwayNC iGPU/systemd ownership, SDDM Intel greeter pinning, selected window rules, and the `wl-copy` wrapper inside the clipboard module.

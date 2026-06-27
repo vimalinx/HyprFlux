@@ -8,7 +8,13 @@ echo "Checking shell syntax..."
 while IFS= read -r file; do
   echo "  bash -n $file"
   bash -n "$file"
-done < <(find modules scripts -type f \( -name '*.sh' -o -name 'safe-mic-set-default' \) | sort)
+done < <(
+  find modules scripts -type f | sort | while IFS= read -r candidate; do
+    if head -n 1 "$candidate" | grep -Eq '^#!.*\b(bash|sh)\b'; then
+      printf '%s\n' "$candidate"
+    fi
+  done
+)
 
 echo "Checking required module docs..."
 while IFS= read -r module_dir; do

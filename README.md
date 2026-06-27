@@ -16,6 +16,14 @@ HyprFlux is a public collection of the small desktop customizations that proved 
 - Waybar battery limit and platform/TLP profile indicators.
 - Battery-aware Hypridle lock, DPMS, and suspend policy.
 - Optional low-power lid-close behavior for keeping Hyprland alive only in Quiet/power-saver mode.
+- Robust `swww` wallpaper restore and monitor-change reapply.
+- Fcitx5 candidate scaling and HiDPI native WeChat launcher.
+- Quickshell on-demand startup for overview/status panels.
+- Satty annotated screenshot workflow and optional GPU Screen Recorder keybinds.
+- Waydroid clipboard paste bridge through ADB Keyboard.
+- SwayNC systemd ownership with iGPU environment override.
+- Optional SDDM Intel greeter pinning for hybrid NVIDIA laptops.
+- Selected Hyprland window/layer polish snippets.
 - Tmux status styling from a Wallust/Kitty palette.
 - Optional foot/tmux workspace restore scripts.
 - Clipboard history as user systemd services.
@@ -36,6 +44,14 @@ modules/
   waybar-power-status/
   hypridle-power-policy/
   low-power-lid-optional/
+  wallpaper-swww-restore/
+  fcitx-wechat-scale/
+  quickshell-on-demand/
+  satty-screenshot/
+  waydroid-clipboard/
+  swaync-igpu-systemd/
+  sddm-intel-greeter/
+  hypr-window-polish/
   tmux-wallust/
   foot-workspace-restore/
   clipboard-systemd/

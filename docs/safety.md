@@ -18,6 +18,9 @@ Several modules affect live desktop behavior:
 - PipeWire audio routing can change the default microphone.
 - NVIDIA modprobe and TLP drop-ins are system-level files and can affect boot, GPU offload, CUDA, runtime power, and display behavior.
 - ASUS/TLP power scripts can change refresh rate, brightness, radios, Bluetooth, blur, and battery charge thresholds.
+- SDDM greeter pinning is display-manager config; test it only when you can recover from a TTY.
+- Waydroid helpers may require ADB Keyboard inside Waydroid and should not be mixed with host firewall/VPN routing changes unless reviewed.
+- `wl-copy` wrappers shadow the system binary when `~/.local/bin` comes first in `PATH`; smoke test stdin copy, argument copy, and `--clear`.
 - Startup restore scripts can reopen terminals and increase login-time load.
 - Waybar scripts may scan process tables or Hyprland clients.
 - Clipboard services should not be duplicated with old `exec-once wl-paste` lines.

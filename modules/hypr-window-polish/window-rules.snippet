@@ -1,0 +1,63 @@
+# Avoid idle while fullscreen apps are active.
+windowrule {
+  name = hyprflux-idle-inhibit-fullscreen
+  idle_inhibit = fullscreen
+  match:fullscreen = 1
+}
+
+# Picture-in-picture: top-right floating pinned mini-player.
+windowrule {
+  name = hyprflux-picture-in-picture
+  move = ((monitor_w*0.61)) ((monitor_h*0.07))
+  float = on
+  size = (monitor_w*0.38) (monitor_h*0.38)
+  pin = on
+  keep_aspect_ratio = on
+  match:title = ^(Picture-in-Picture)$
+}
+
+# Video windows should stay visually clean.
+windowrule {
+  name = hyprflux-video-no-blur
+  no_blur = on
+  opacity = 1.0
+  match:class = ^([Mm]pv|vlc|com.github.rafostar.Clapper)$
+}
+
+# foot terminals can become visually muddy with blur.
+windowrule {
+  name = hyprflux-foot-no-blur
+  no_blur = on
+  match:class = ^(foot)$
+}
+
+# Common file dialogs.
+windowrule {
+  name = hyprflux-dialog-add-folder
+  float = on
+  size = (monitor_w*0.7) (monitor_h*0.6)
+  center = on
+  match:title = ^(Add Folder to Workspace)$
+}
+
+windowrule {
+  name = hyprflux-dialog-save-as
+  float = on
+  size = (monitor_w*0.7) (monitor_h*0.6)
+  center = on
+  match:title = ^(Save As)$
+}
+
+windowrule {
+  name = hyprflux-dialog-open-files
+  float = on
+  size = (monitor_w*0.7) (monitor_h*0.6)
+  match:initial_title = (Open Files)
+}
+
+windowrule {
+  name = hyprflux-auth-dialog
+  float = on
+  center = on
+  match:title = ^(Authentication Required)$
+}
