@@ -16,6 +16,8 @@ This is not a generic "turn on every NVIDIA Wayland variable" module. The source
 ## Files
 
 - `91-igpu-gui-stack.conf`: user environment.d template for GUI apps.
+- `10-force-mesa-egl.conf`: optional systemd user drop-in for the Hyprland
+  unit itself, because compositor environment must be set before Hyprland starts.
 - `hypr-env.snippet`: Hyprland `env = ...` equivalent.
 - `nvidia-compute.conf`: core NVIDIA dynamic power management option.
 - `zz-nvidia-compute-only.conf.template`: stricter template that blocks NVIDIA display/KMS modules.
@@ -35,6 +37,15 @@ cp 91-igpu-gui-stack.conf ~/.config/environment.d/
 
 For Hyprland-only environment variables, copy the `env = ...` lines from `hypr-env.snippet` into your Hyprland env config.
 
+If Hyprland is launched through `wayland-wm@hyprland.desktop.service`, install
+the unit drop-in so the compositor itself starts on Mesa:
+
+```bash
+mkdir -p ~/.config/systemd/user/wayland-wm@hyprland.desktop.service.d
+cp 10-force-mesa-egl.conf ~/.config/systemd/user/wayland-wm@hyprland.desktop.service.d/
+systemctl --user daemon-reload
+```
+
 For system-level NVIDIA templates, inspect first. They require root and may conflict with `supergfxd` generated config:
 
 ```bash
@@ -52,3 +63,10 @@ Only use `zz-nvidia-compute-only.conf.template` if you intentionally want strict
 ```
 
 Good idle evidence on the source workstation was `supergfxctl -S` showing `suspended` and `/sys/bus/pci/devices/0000:01:00.0/power/runtime_status` showing `suspended`.
+
+To confirm the Hyprland unit drop-in was loaded:
+
+```bash
+systemctl --user cat 'wayland-wm@hyprland.desktop.service'
+systemctl --user show 'wayland-wm@hyprland.desktop.service' -p Environment
+```

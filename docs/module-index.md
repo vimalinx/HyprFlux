@@ -26,11 +26,19 @@ PipeWire filter-chain template that creates a low-gain virtual microphone source
 
 ## nvidia-hybrid-compute
 
-Hybrid NVIDIA module where normal GUI apps use Intel/Mesa and the NVIDIA dGPU remains available for CUDA or explicit offload. Includes environment snippets, modprobe/TLP templates, and power evidence scripts.
+Hybrid NVIDIA module where normal GUI apps use Intel/Mesa and the NVIDIA dGPU remains available for CUDA or explicit offload. Includes environment snippets, a Hyprland systemd unit drop-in, modprobe/TLP templates, and power evidence scripts.
 
 ## asus-tlp-power-stack
 
 ASUS laptop profile stack for keeping `asusctl`, TLP/TLP-PD, Hyprland refresh, blur, CAVA, Wi-Fi powersave, Bluetooth idle state, and notifications aligned behind one profile toggle.
+
+## systemd-memory-guard
+
+User systemd slice drop-ins that pressure GUI app workloads earlier and protect the interactive Wayland session from whole-session kernel OOM events.
+
+## kernel-power-hardening
+
+Modprobe templates for HDA audio powersave, Intel Wi-Fi powersave, and disabling rarely used network protocol modules.
 
 ## waybar-power-status
 

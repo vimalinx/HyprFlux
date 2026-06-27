@@ -13,6 +13,8 @@ HyprFlux is a public collection of the small desktop customizations that proved 
 - A PipeWire low-gain virtual microphone for clipping-safe calls and recording.
 - Hybrid NVIDIA setup where GUI apps stay on Intel/Mesa while CUDA remains available.
 - ASUS/TLP power profile cycling and balanced boot defaults.
+- User systemd memory-pressure guards for app and session slices.
+- Kernel audio/Wi-Fi powersave and rare network protocol hardening templates.
 - Waybar battery limit and platform/TLP profile indicators.
 - Battery-aware Hypridle lock, DPMS, and suspend policy.
 - Optional low-power lid-close behavior for keeping Hyprland alive only in Quiet/power-saver mode.
@@ -41,6 +43,8 @@ modules/
   safe-mic-lowgain/
   nvidia-hybrid-compute/
   asus-tlp-power-stack/
+  systemd-memory-guard/
+  kernel-power-hardening/
   waybar-power-status/
   hypridle-power-policy/
   low-power-lid-optional/
