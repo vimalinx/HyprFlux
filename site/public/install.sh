@@ -148,7 +148,7 @@ git_clone_fail_hint() {
 HF_VENDOR_TAR="${HF_VENDOR_TAR:-https://arch.vimalinx.com/vendor/HyprFlux-main.tar.gz}"
 
 sync_source_tarball() {
-  local url="$HF_VENDOR_TAR" cache archive attempt
+  local url="$HF_VENDOR_TAR" cache archive attempt expected actual remote_len local_len
   info "Trying vendor tarball: $url"
   if ! have curl; then
     warn "curl required for vendor tarball"
@@ -158,40 +158,71 @@ sync_source_tarball() {
     warn "tar required to extract vendor tarball"
     return 1
   fi
-  # Persist + resume: slow CN links often need >2 minutes and drop mid-transfer.
   cache="${XDG_CACHE_HOME:-$HOME/.cache}/hyprflux"
   mkdir -p "$cache"
   archive="$cache/HyprFlux-main.tar.gz"
+
+  expected="$(
+    curl -fsSL --connect-timeout 10 --max-time 30 "${url}.sha256" 2>/dev/null \
+      | awk 'NF>=1 {print $1; exit}'
+  )"
+  remote_len="$(
+    curl -fsSIL --connect-timeout 10 --max-time 30 "$url" 2>/dev/null \
+      | awk 'BEGIN{IGNORECASE=1} /^content-length:/ {print $2}' \
+      | tr -d '\r' | tail -n1
+  )"
+
+  # Stale/partial cache from an older tarball revision will corrupt resume.
+  if [[ -f "$archive" ]]; then
+    local_len="$(wc -c <"$archive" | tr -d ' ')"
+    if [[ -n "$remote_len" && "$local_len" -gt "$remote_len" ]]; then
+      warn "Clearing oversized vendor cache (local=$local_len remote=$remote_len)"
+      rm -f "$archive"
+    fi
+  fi
+
   for attempt in 1 2 3 4 5; do
     info "Vendor tarball download attempt $attempt/5 (resumable)"
     if curl -fL --connect-timeout 15 --max-time 900 \
          --retry 0 -C - \
          -o "$archive" "$url"; then
-      break
+      :
+    else
+      warn "Vendor tarball attempt $attempt incomplete — will resume"
+      sleep 2
+      [[ "$attempt" -eq 5 ]] && { warn "Vendor tarball download failed after resumes"; return 1; }
+      continue
     fi
-    warn "Vendor tarball attempt $attempt incomplete — will resume"
-    sleep 2
-    if [[ "$attempt" -eq 5 ]]; then
-      warn "Vendor tarball download failed after resumes"
-      return 1
+
+    if [[ -n "$expected" ]]; then
+      actual="$(sha256sum "$archive" | awk '{print $1}')"
+      if [[ "$actual" != "$expected" ]]; then
+        warn "Vendor tarball checksum mismatch — clearing cache and retrying"
+        rm -f "$archive"
+        sleep 1
+        continue
+      fi
+      ok "Vendor tarball checksum OK"
     fi
-  done
-  mkdir -p "$(dirname "$HF_DIR")"
-  rm -rf "$HF_DIR"
-  mkdir -p "$HF_DIR"
-  if ! tar -xzf "$archive" -C "$HF_DIR"; then
+
+    mkdir -p "$(dirname "$HF_DIR")"
+    rm -rf "$HF_DIR"
+    mkdir -p "$HF_DIR"
+    if tar -xzf "$archive" -C "$HF_DIR"; then
+      if [[ -f "$HF_DIR/bootstrap/full.sh" ]]; then
+        ok "Source synced from vendor tarball"
+        return 0
+      fi
+      warn "Vendor tarball missing bootstrap/full.sh"
+    else
+      warn "Vendor tarball extract failed (corrupt download cleared)"
+    fi
     rm -rf "$HF_DIR"
     rm -f "$archive"
-    warn "Vendor tarball extract failed (corrupt download cleared)"
-    return 1
-  fi
-  if [[ ! -f "$HF_DIR/bootstrap/full.sh" ]]; then
-    rm -rf "$HF_DIR"
-    warn "Vendor tarball missing bootstrap/full.sh"
-    return 1
-  fi
-  ok "Source synced from vendor tarball"
-  return 0
+    sleep 1
+  done
+  warn "Vendor tarball download failed after resumes"
+  return 1
 }
 
 detect_pkg() {
@@ -346,4 +377,4 @@ chmod +x ./bootstrap/*.sh ./install.sh ./scripts/*.sh ./session/*.sh 2>/dev/null
 ./bootstrap/full.sh "${args[@]}"
 ok "Full desktop bootstrap finished — reboot and log into Hyprland"
 
-# vendor-tarball-resume 2026-07-20T23:20:00+08:00
+# vendor-tarball-sha256 2026-07-20T23:50:00+08:00
