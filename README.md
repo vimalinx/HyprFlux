@@ -20,6 +20,12 @@ One-liner (landing page: [arch.vimalinx.com](https://arch.vimalinx.com)):
 curl -fsSL https://arch.vimalinx.com/install | bash
 ```
 
+If `git` (or other basics) is missing, the bootstrap installs it with `sudo` and asks for the admin password on the real TTY. Prefer this form if the pipe makes password entry awkward:
+
+```bash
+bash <(curl -fsSL https://arch.vimalinx.com/install)
+```
+
 Non-interactive / force generic power stack:
 
 ```bash

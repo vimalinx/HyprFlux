@@ -23,8 +23,10 @@
       <button type="button" id="copy" class="copy">复制</button>
     </section>
 
+    <p class="hint">缺 git 等依赖时会自动 <code>sudo pacman/apt/dnf</code> 安装，并提示输入管理员密码。</p>
     <p class="hint">非交互：<code>HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash</code></p>
     <p class="hint">强制通用电源栈：<code>HF_PROFILE=generic HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash</code></p>
+    <p class="hint">若管道导致密码难输，可用：<code>bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</code></p>
 
     <nav class="links">
       <a href="https://github.com/vimalinx/HyprFlux">GitHub</a>
