@@ -53,8 +53,11 @@ fi
 
 hf_section "Packages"
 
-hf_info "Refreshing pacman databases"
-sudo pacman -Sy --noconfirm <"$TTY_IN"
+# Arch partial upgrades break the Hyprland stack (soname bumps on hyprutils /
+# aquamarine). Bootstrap always syncs DBs then upgrades the system before the
+# desktop package set, so dependencies resolve in one consistent generation.
+hf_info "Syncing pacman databases and upgrading system (-Syu)"
+sudo pacman -Syu --noconfirm <"$TTY_IN"
 
 OFFICIAL=()
 ASUS=()
@@ -66,8 +69,7 @@ for pkg in "${OFFICIAL_RAW[@]}"; do
     AUR+=("$pkg")
   fi
 done
-for pkg in "${ASUS_RAW[@]:-}"; do
-  [[ -z "${pkg:-}" ]] && continue
+for pkg in "${ASUS_RAW[@]}"; do
   if pkg_in_sync "$pkg" || pkg_installed "$pkg"; then
     ASUS+=("$pkg")
   else
@@ -94,7 +96,7 @@ hf_info "official: ${#OFFICIAL[@]}  aur: ${#AUR[@]}  asus-extra: ${#ASUS[@]}"
 if [[ ${#OFFICIAL[@]} -gt 0 || ${#ASUS[@]} -gt 0 ]]; then
   hf_info "Installing official packages"
   # shellcheck disable=SC2068
-  sudo pacman -S --needed --noconfirm ${OFFICIAL[@]:-} ${ASUS[@]:-} <"$TTY_IN"
+  sudo pacman -S --needed --noconfirm ${OFFICIAL[@]+"${OFFICIAL[@]}"} ${ASUS[@]+"${ASUS[@]}"} <"$TTY_IN"
 fi
 
 ensure_swww_compat_symlinks
