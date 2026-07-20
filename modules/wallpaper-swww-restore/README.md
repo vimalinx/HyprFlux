@@ -1,6 +1,6 @@
 # Wallpaper SWWW Restore
 
-Robust Hyprland wallpaper restore for `swww`.
+Robust Hyprland wallpaper restore for `swww` / `awww` (Arch renamed `swww` → `awww`).
 
 ## Behavior
 
@@ -27,6 +27,6 @@ exec-once = $scriptsDir/MonitorWallpaperSync.sh
 
 ## Dependencies
 
-- `swww`
+- `awww` (Arch; formerly `swww`) or `swww`
 - `hyprctl`
 - `jq`
