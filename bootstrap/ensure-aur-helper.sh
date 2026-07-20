@@ -100,14 +100,27 @@ install_yay_from_github_release() {
 
   tdir="$work/yay-release"
   mkdir -p "$tdir"
-  for url in \
-    "https://ghfast.top/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}" \
-    "https://gh-proxy.com/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}" \
-    "https://mirror.ghproxy.com/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}" \
+
+  local -a urls=()
+  if [[ "${HF_CN:-0}" == "1" ]]; then
+    urls+=("https://arch.vimalinx.com/vendor/yay_${ver}_${asset_arch}.tar.gz")
+  fi
+  urls+=(
+    "https://ghfast.top/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}"
+    "https://gh-proxy.com/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}"
+    "https://mirror.ghproxy.com/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}"
     "https://github.com/Jguer/yay/releases/download/v${ver}/${asset}"
-  do
+  )
+
+  local url max_time
+  for url in "${urls[@]}"; do
+    if [[ "$url" == https://arch.vimalinx.com/* ]]; then
+      max_time=300
+    else
+      max_time=180
+    fi
     hf_info "Trying yay release: $url"
-    if curl -fL --connect-timeout 8 --max-time 180 --retry 2 "$url" -o "$tdir/$asset"; then
+    if curl -fL --connect-timeout 8 --max-time "$max_time" --speed-limit 1024 --speed-time 20 --retry 2 "$url" -o "$tdir/$asset"; then
       tar -xzf "$tdir/$asset" -C "$tdir"
       local bin
       bin="$(find "$tdir" -type f -name yay -perm -111 | head -n1)"
