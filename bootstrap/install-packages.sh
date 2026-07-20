@@ -12,8 +12,11 @@ TTY_IN="${HF_TTY:-/dev/tty}"
 [[ -r "$TTY_IN" ]] || TTY_IN="/dev/stdin"
 
 profile="${1:-generic}"
+include_optional="${2:-0}"
+[[ "${HF_OPTIONAL:-0}" == "1" ]] && include_optional=1
 official_list="$repo_root/bootstrap/packages-official.txt"
 aur_list="$repo_root/bootstrap/packages-aur.txt"
+aur_optional_list="$repo_root/bootstrap/packages-aur-optional.txt"
 asus_list="$repo_root/bootstrap/packages-asus.txt"
 
 read_pkgs() {
@@ -46,6 +49,15 @@ ensure_swww_compat_symlinks() {
 
 mapfile -t OFFICIAL_RAW < <(read_pkgs "$official_list")
 mapfile -t AUR < <(read_pkgs "$aur_list")
+if [[ "$include_optional" == "1" ]]; then
+  mapfile -t AUR_OPT < <(read_pkgs "$aur_optional_list")
+  if [[ ${#AUR_OPT[@]} -gt 0 ]]; then
+    AUR+=("${AUR_OPT[@]}")
+    hf_info "Including optional AUR packages (${#AUR_OPT[@]})"
+  fi
+else
+  hf_ok "Skipping optional AUR (quickshell-git). Pass --with-optional / HF_OPTIONAL=1 to include."
+fi
 ASUS_RAW=()
 if [[ "$profile" == "asus" ]]; then
   mapfile -t ASUS_RAW < <(read_pkgs "$asus_list")
@@ -104,19 +116,17 @@ ensure_swww_compat_symlinks
 "$repo_root/bootstrap/ensure-aur-helper.sh"
 aur_helper="$(command -v yay || command -v paru)"
 if [[ ${#AUR[@]} -gt 0 ]]; then
-  hf_info "Installing AUR packages with $aur_helper"
-  # Prefer skipping already-installed packages; continue on optional AUR failures.
-  if ! "$aur_helper" -S --needed --noconfirm "${AUR[@]}" <"$TTY_IN"; then
-    hf_warn "Batch AUR install had failures — retrying packages one by one"
-    for pkg in "${AUR[@]}"; do
-      if pkg_installed "$pkg"; then
-        continue
-      fi
-      if ! "$aur_helper" -S --needed --noconfirm "$pkg" <"$TTY_IN"; then
-        hf_warn "AUR package failed (continuing): $pkg"
-      fi
-    done
-  fi
+  hf_info "Installing AUR packages with $aur_helper (one-by-one for resilience)"
+  for pkg in "${AUR[@]}"; do
+    if pkg_installed "$pkg"; then
+      hf_ok "Already installed: $pkg"
+      continue
+    fi
+    hf_info "AUR: $pkg"
+    if ! "$aur_helper" -S --needed --noconfirm "$pkg" <"$TTY_IN"; then
+      hf_warn "AUR package failed (continuing): $pkg"
+    fi
+  done
 fi
 
 ensure_swww_compat_symlinks

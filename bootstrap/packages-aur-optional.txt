@@ -1,0 +1,3 @@
+# Optional AUR packages (HF_OPTIONAL=1 or bootstrap/full.sh --with-optional).
+# quickshell-git is a long C++ compile and often drops flaky SSH/WiFi sessions.
+quickshell-git

@@ -1,4 +1,4 @@
-# AUR packages for a fuller KooL-compatible desktop.
+# Default AUR packages for bootstrap (keep this list light).
+# Heavy compile-from-source packages belong in packages-aur-optional.txt.
 wallust
 wlogout
-quickshell-git
