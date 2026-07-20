@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HyprFlux · Arch + Hyprland</title>
+  <meta name="description" content="Vimalinx HyprFlux — one-line installer for Arch Linux + Hyprland desktop modules." />
+  <link rel="canonical" href="https://arch.vimalinx.com/" />
+  <meta property="og:title" content="HyprFlux" />
+  <meta property="og:description" content="One-line Arch + Hyprland desktop flux installer." />
+  <meta property="og:url" content="https://arch.vimalinx.com/" />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="stage">
+    <p class="brand">HyprFlux</p>
+    <h1>Arch 桌面，一键装上</h1>
+    <p class="lede">从真实华硕 / 通用 Hyprland 工作站提炼的模块集。复制命令，装完再按需合并快捷键与 Waybar。</p>
+
+    <section class="install" aria-label="install command">
+      <div class="cmd" id="cmd">curl -fsSL https://arch.vimalinx.com/install | bash</div>
+      <button type="button" id="copy" class="copy">复制</button>
+    </section>
+
+    <p class="hint">非交互：<code>HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash</code></p>
+    <p class="hint">强制通用电源栈：<code>HF_PROFILE=generic HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash</code></p>
+
+    <nav class="links">
+      <a href="https://github.com/vimalinx/HyprFlux">GitHub</a>
+      <a href="/install">install script</a>
+      <a href="https://github.com/vimalinx/HyprFlux/blob/main/docs/safety.md">Safety</a>
+    </nav>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

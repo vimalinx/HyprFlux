@@ -1,0 +1,2 @@
+# Shared battery limit display (ASUS and generic).
+waybar_battery_limit.sh|~/.config/hypr/scripts/waybar_battery_limit.sh|755

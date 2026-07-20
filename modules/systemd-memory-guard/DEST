@@ -1,0 +1,2 @@
+app.slice-memory-guard.conf|~/.config/systemd/user/app.slice.d/10-memory-guard.conf|644
+session.slice-memory-guard.conf|~/.config/systemd/user/session.slice.d/10-memory-guard.conf|644

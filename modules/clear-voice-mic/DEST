@@ -1,0 +1,2 @@
+clear-voice-mic-webrtc.conf.template|~/.config/pipewire/clear-voice-mic-webrtc.conf|644
+clear-voice-mic.service|~/.config/systemd/user/clear-voice-mic.service|644

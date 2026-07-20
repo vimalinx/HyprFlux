@@ -1,0 +1,12 @@
+[Unit]
+Description=Auto-save Hyprland desktop session every hour
+
+[Timer]
+OnStartupSec=10min
+OnUnitActiveSec=1h
+AccuracySec=1min
+Persistent=false
+Unit=hypr-desktop-session-autosave.service
+
+[Install]
+WantedBy=timers.target

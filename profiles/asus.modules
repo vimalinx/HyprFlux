@@ -1,0 +1,5 @@
+# ASUS-only modules. Skipped automatically on non-ASUS hardware.
+asus-tlp-power-stack
+asus-fan-mode
+waybar-power-status
+low-power-lid-optional

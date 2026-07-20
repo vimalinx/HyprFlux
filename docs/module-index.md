@@ -1,101 +1,117 @@
 # Module Index
 
-## codex-task-notify
+## Power and laptop
 
-Integration notes for `vimalinx/codex-task-notify`, a Codex CLI completion notifier that includes project and Hyprland workspace context.
+### asus-tlp-power-stack
 
-## hypr-workspace-scroll
+ASUS `asusctl` + TLP orchestrator, battery charge limit cycling, and Waybar power-mode scripts.
 
-Hyprland keybind snippet that makes `SUPER + mouse wheel` match the preferred workspace direction.
+### asus-fan-mode
 
-## waybar-workspace-scroll
+ASUS fan-curve helper for Waybar / keybinds.
 
-Waybar workspace module snippet with matching scroll direction for `hyprland/workspaces#numbers`.
+### generic-power-stack
 
-## waybar-cava-lowpower
+Non-ASUS power-profile cycling via `powerprofilesctl` or `tlpctl`, plus sysfs battery-limit toggle.
 
-Waybar CAVA wrapper that emits a static bar when idle, starts CAVA only while audio is playing, and cleans up CAVA children when Waybar exits.
+### waybar-power-status
 
-## waybar-agent-status
+Shared battery-limit Waybar display (`waybar_battery_limit.sh`) and integration snippets.
 
-Waybar module that scans open Hyprland windows and process descendants to summarize visible desktop agents and Codex task state.
+### low-power-lid-optional
 
-## safe-mic-lowgain
+Optional lid-close guard for quiet / power-saver sessions.
 
-PipeWire filter-chain template that creates a low-gain virtual microphone source and optionally sets it as the default source.
+### hypridle-power-policy
 
-## nvidia-hybrid-compute
+Battery-aware Hypridle lock / DPMS / suspend snippet.
 
-Hybrid NVIDIA module where normal GUI apps use Intel/Mesa and the NVIDIA dGPU remains available for CUDA or explicit offload. Includes environment snippets, a Hyprland systemd unit drop-in, modprobe/TLP templates, and power evidence scripts.
+## GPU / memory / kernel
 
-## asus-tlp-power-stack
+### nvidia-hybrid-compute
 
-ASUS laptop profile stack for keeping `asusctl`, TLP/TLP-PD, Hyprland refresh, blur, CAVA, Wi-Fi powersave, Bluetooth idle state, and notifications aligned behind one profile toggle.
+GUI-on-iGPU + CUDA-capable NVIDIA hybrid templates.
 
-## systemd-memory-guard
+### systemd-memory-guard
 
-User systemd slice drop-ins that pressure GUI app workloads earlier and protect the interactive Wayland session from whole-session kernel OOM events.
+User slice memory policy: protect `session.slice`, do not PSI-kill ordinary apps.
 
-## kernel-power-hardening
+### wayland-oom-protection
 
-Modprobe templates for HDA audio powersave, Intel Wi-Fi powersave, and disabling rarely used network protocol modules.
+Mark Hyprland compositor `ManagedOOMPreference=avoid`.
 
-## waybar-power-status
+### kernel-power-hardening
 
-Waybar custom modules for platform/TLP power mode and battery charge-limit display, plus an optional battery threshold toggle.
+Modprobe templates for audio / Wi-Fi powersave and rare protocol blacklists.
 
-## hypridle-power-policy
+## Desktop UI
 
-Battery-aware Hypridle lock, DPMS, and suspend snippet. Suspends only when UPower reports the machine is discharging.
+### quickshell-on-demand
 
-## low-power-lid-optional
+Starts Quickshell on demand for Action Desk / status / overview / terminals IPC.
 
-Optional user service that blocks lid-close suspend only while a low-power profile is active. Disabled by default in the source setup.
+### hypr-terminal-combos
 
-## wallpaper-swww-restore
+Named terminal combination capture / restore CLI.
 
-Robust `swww` wallpaper restore that starts the daemon, applies per-monitor wallpaper, keeps Rofi/Hyprland wallpaper pointers in sync, and reapplies when monitors change.
+### hypr-session-button
 
-## fcitx-wechat-scale
+Hyprland session save / restore helper (+ autosave timer).
 
-Fcitx5 classic UI font scaler for WeChat focus plus a native WeChat HiDPI launcher that detects monitor scale and focuses an existing WeChat window.
+### dual-monitor-workspaces
 
-## quickshell-on-demand
+Independent 1–10 workspace banks for laptop panel + side display.
 
-Quickshell helper that starts `qs` only when overview/status-panel IPC calls are needed, with keybind, gesture, and Waybar snippets.
+### hypr-window-polish / hypr-workspace-scroll / waybar-workspace-scroll
 
-## satty-screenshot
+Window rules, gestures, and matching workspace scroll direction.
 
-Annotated screenshot workflow using `hyprshot` and `satty`, plus optional GPU Screen Recorder keybind snippets.
+### wallpaper-swww-restore
 
-## waydroid-clipboard
+Robust `swww` restore and monitor-change reapply.
 
-Host-to-Waydroid paste bridge that sends Wayland clipboard text through ADB Keyboard.
+### satty-screenshot
 
-## swaync-igpu-systemd
+Annotated screenshot workflow (+ optional GSR binds).
 
-SwayNC systemd user drop-in that keeps the notification daemon on Intel/Mesa and documents disabling direct Hyprland `exec-once = swaync` startup.
+### swaync-igpu-systemd / sddm-intel-greeter
 
-## sddm-intel-greeter
+Keep notifications / greeter on iGPU where relevant.
 
-Optional SDDM X11 greeter template that pins the login greeter to Intel iGPU to avoid waking the NVIDIA card before session start.
+### caffeine-disable
 
-## hypr-window-polish
+Disable Caffeine-ng when using Waybar idle inhibitor.
 
-Selected public-safe Hyprland window/layer snippets: fullscreen idle inhibit, picture-in-picture, dialogs, no-blur rules, layer blur, gestures, XWayland scaling, and cursor behavior.
+### vibemouse-waybar
 
-## tmux-wallust
+Waybar module + watcher for VibeMouse recording state.
 
-Tmux config snippet and theme script that read colors from a Kitty/Wallust palette without heavy status-line polling.
+### waybar-cava-lowpower / waybar-agent-status
 
-## foot-workspace-restore
+Low-power CAVA wrapper and desktop-agent summary module.
 
-Optional scripts for restoring selected foot/tmux windows to Hyprland workspaces. Disabled by default because it can add login-time memory and process pressure.
+## Input / audio / apps
 
-## clipboard-systemd
+### fcitx-wechat-scale
 
-Systemd user units for text and image clipboard history, replacing duplicate `exec-once wl-paste` startup entries.
+Fcitx candidate scaler + HiDPI WeChat launcher.
 
-## caffeine-disable
+### safe-mic-lowgain / rnnoise-mic / clear-voice-mic
 
-Autostart override that disables Caffeine-ng when using Waybar's `idle_inhibitor` instead.
+Low-gain mic base plus optional RNNoise or WebRTC clear-voice chains.
+
+### clipboard-systemd
+
+cliphist text/image user services and optional `wl-copy` wrapper.
+
+### waydroid-clipboard
+
+Host → Waydroid paste bridge via ADB Keyboard.
+
+### tmux-wallust / foot-workspace-restore
+
+Tmux palette sync and optional foot/tmux workspace restore.
+
+### codex-task-notify
+
+Integration notes for the separate Codex completion notifier repo.

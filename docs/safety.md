@@ -11,7 +11,13 @@ Avoid copying these files directly into public repos:
 - Browser, cookie, session, SSH, cloud, or deployment state.
 - Full Waybar/Hyprland trees if they include private scripts or host-specific paths.
 
-## Apply One Module At A Time
+## Prefer The Installer, Still Review Diffs
+
+`./install.sh` applies a whole profile and backs up colliding files as `*.hyprflux-bak.<timestamp>`. That is convenient, not a substitute for reading module READMEs—especially NVIDIA, PipeWire, SDDM, and memory-guard modules.
+
+On non-ASUS machines the installer skips the ASUS profile. The session-start script also refuses to auto-start ASUS helpers there.
+
+## Apply Carefully
 
 Several modules affect live desktop behavior:
 

@@ -1,0 +1,16 @@
+"custom/battery_limit": {
+  "exec": "$HOME/.config/hypr/scripts/waybar_battery_limit.sh",
+  "return-type": "json",
+  "interval": 30,
+  "format": "{}",
+  "on-click": "$HOME/.config/hypr/UserScripts/battery-toggle.sh",
+  "tooltip": true
+},
+"custom/power_mode": {
+  "exec": "$HOME/.config/hypr/scripts/waybar-power-mode.sh",
+  "return-type": "json",
+  "interval": 30,
+  "format": "{}",
+  "on-click": "$HOME/.config/hypr/UserScripts/toggle-power-profile.sh",
+  "tooltip": true
+}

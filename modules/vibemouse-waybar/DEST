@@ -1,0 +1,3 @@
+waybar-vibemouse-status.sh|~/.config/hypr/scripts/waybar-vibemouse-status.sh|755
+waybar-vibemouse-watch.sh|~/.config/hypr/scripts/waybar-vibemouse-watch.sh|755
+vibemouse-waybar-watch.service|~/.config/systemd/user/vibemouse-waybar-watch.service|644

@@ -1,42 +1,32 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+# Waybar 电池限制显示脚本
 
-battery_dir="$(find /sys/class/power_supply -maxdepth 1 -type l -name 'BAT*' | sort | head -n 1)"
+# 默认图标和颜色
+ICON_80="󰔸" # 盾牌 (保护)
+ICON_60="󰂃" # 插头 (长寿命)
+ICON_100="󱟢" # 闪电 (满血)
 
-if [ -z "$battery_dir" ]; then
-  printf '{"text":"NoBat","tooltip":"No battery found","class":"unknown"}\n'
-  exit 0
+# 获取 BAT1 或 BAT0
+BAT=$(ls /sys/class/power_supply/ | grep BAT | head -n 1)
+CHARGE_FILE="/sys/class/power_supply/$BAT/charge_control_end_threshold"
+CAPACITY_FILE="/sys/class/power_supply/$BAT/capacity"
+
+if [ -f "$CHARGE_FILE" ]; then
+    LIMIT=$(cat "$CHARGE_FILE")
+    CAPACITY=$(cat "$CAPACITY_FILE")
+    
+    # 紧凑模式: 去掉空格，例如 80/80%
+    TEXT="$CAPACITY/$LIMIT%"
+    
+    if [ "$LIMIT" -eq 80 ]; then
+        echo "{\"text\": \"$TEXT\", \"tooltip\": \"电池保护: 80% (健康)\", \"class\": \"good\", \"alt\": \"80\"}"
+    elif [ "$LIMIT" -eq 60 ]; then
+        echo "{\"text\": \"$TEXT\", \"tooltip\": \"电池保护: 60% (长寿命)\", \"class\": \"warning\", \"alt\": \"60\"}"
+    elif [ "$LIMIT" -eq 100 ]; then
+        echo "{\"text\": \"$TEXT\", \"tooltip\": \"电池保护: 100% (充满)\", \"class\": \"critical\", \"alt\": \"100\"}"
+    else
+        echo "{\"text\": \"$TEXT\", \"tooltip\": \"当前限制: $LIMIT%\", \"class\": \"info\"}"
+    fi
+else
+    echo "{\"text\": \"Err\", \"tooltip\": \"无法读取电池设置\"}"
 fi
-
-charge_file="$battery_dir/charge_control_end_threshold"
-capacity_file="$battery_dir/capacity"
-
-if [ ! -r "$charge_file" ] || [ ! -r "$capacity_file" ]; then
-  printf '{"text":"Err","tooltip":"Battery charge limit is not readable","class":"unknown"}\n'
-  exit 0
-fi
-
-limit="$(cat "$charge_file")"
-capacity="$(cat "$capacity_file")"
-text="${capacity}/${limit}%"
-
-case "$limit" in
-  80)
-    class_name="good"
-    tooltip="Battery protection: 80% daily mode"
-    ;;
-  60)
-    class_name="warning"
-    tooltip="Battery protection: 60% long-life mode"
-    ;;
-  100)
-    class_name="critical"
-    tooltip="Battery protection: 100% full-charge mode"
-    ;;
-  *)
-    class_name="info"
-    tooltip="Battery charge limit: ${limit}%"
-    ;;
-esac
-
-printf '{"text":"%s","tooltip":"%s","class":"%s","alt":"%s"}\n' "$text" "$tooltip" "$class_name" "$limit"

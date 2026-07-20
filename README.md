@@ -1,103 +1,93 @@
 # HyprFlux
 
-Curated desktop flux for an Arch Linux + Hyprland workstation.
+<div align="center">
 
-HyprFlux is a public collection of the small desktop customizations that proved useful on my daily Hyprland setup. It keeps the reusable parts, templates, and notes, instead of publishing a full private dotfiles dump.
+**Curated desktop flux for Arch Linux + Hyprland**
 
-## What Is Included
+[Install](#install) · [Profiles](#profiles) · [Modules](#modules) · [Safety](docs/safety.md)
 
-- Codex task completion notifications with project and workspace context.
-- Reversed Hyprland and Waybar workspace scroll direction.
-- A low-power Waybar CAVA visualizer that stays idle until audio is playing.
-- A Waybar desktop-agent status module for Codex, Claude Code, OMP, OpenClaw, Hermes, and browser agents.
-- A PipeWire low-gain virtual microphone for clipping-safe calls and recording.
-- Hybrid NVIDIA setup where GUI apps stay on Intel/Mesa while CUDA remains available.
-- ASUS/TLP power profile cycling and balanced boot defaults.
-- User systemd memory-pressure guards for app and session slices.
-- Kernel audio/Wi-Fi powersave and rare network protocol hardening templates.
-- Waybar battery limit and platform/TLP profile indicators.
-- Battery-aware Hypridle lock, DPMS, and suspend policy.
-- Optional low-power lid-close behavior for keeping Hyprland alive only in Quiet/power-saver mode.
-- Robust `swww` wallpaper restore and monitor-change reapply.
-- Fcitx5 candidate scaling and HiDPI native WeChat launcher.
-- Quickshell on-demand startup for overview/status panels.
-- Satty annotated screenshot workflow and optional GPU Screen Recorder keybinds.
-- Waydroid clipboard paste bridge through ADB Keyboard.
-- SwayNC systemd ownership with iGPU environment override.
-- Optional SDDM Intel greeter pinning for hybrid NVIDIA laptops.
-- Selected Hyprland window/layer polish snippets.
-- Tmux status styling from a Wallust/Kitty palette.
-- Optional foot/tmux workspace restore scripts.
-- Clipboard history as user systemd services.
-- A Caffeine-ng autostart disable override for Waybar idle inhibitor users.
+</div>
 
-## Layout
+---
 
-```text
-modules/
-  codex-task-notify/
-  hypr-workspace-scroll/
-  waybar-workspace-scroll/
-  waybar-cava-lowpower/
-  waybar-agent-status/
-  safe-mic-lowgain/
-  nvidia-hybrid-compute/
-  asus-tlp-power-stack/
-  systemd-memory-guard/
-  kernel-power-hardening/
-  waybar-power-status/
-  hypridle-power-policy/
-  low-power-lid-optional/
-  wallpaper-swww-restore/
-  fcitx-wechat-scale/
-  quickshell-on-demand/
-  satty-screenshot/
-  waydroid-clipboard/
-  swaync-igpu-systemd/
-  sddm-intel-greeter/
-  hypr-window-polish/
-  tmux-wallust/
-  foot-workspace-restore/
-  clipboard-systemd/
-  caffeine-disable/
-docs/
-  module-index.md
-  overview.md
-  safety.md
-scripts/
-  check.sh
+HyprFlux packages the reusable pieces of a real Arch + Hyprland workstation as small, auditable modules. It does **not** dump private dotfiles.
+
+## Install
+
+One-liner (landing page: [arch.vimalinx.com](https://arch.vimalinx.com)):
+
+```bash
+curl -fsSL https://arch.vimalinx.com/install | bash
 ```
 
-## Use
+Non-interactive / force generic power stack:
 
-Pick a module, read its `README.md`, then copy or adapt only that module's files into your own dotfiles.
+```bash
+HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash
+HF_PROFILE=generic HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash
+```
 
-This repository intentionally does not ship a global installer. Several modules touch session startup, audio routing, or status-bar process scanning, so they should be applied one at a time.
+Or clone and run locally:
 
-Run checks before committing changes:
+```bash
+git clone https://github.com/vimalinx/HyprFlux.git
+cd HyprFlux
+./install.sh
+```
+
+Useful flags:
+
+```bash
+./install.sh --dry-run          # show the plan only
+./install.sh --profile generic  # force non-ASUS power stack
+./install.sh --profile asus     # force ASUS stack
+./install.sh --with-optional    # include optional modules
+./install.sh -y                 # non-interactive
+```
+
+The installer:
+
+1. Detects ASUS vs non-ASUS hardware.
+2. Applies `profiles/common.modules` plus either `asus` or `generic`.
+3. Installs a session-start script with a clean startup banner (interactive) / quiet Hyprland `exec-once` path.
+4. Backs up colliding files as `*.hyprflux-bak.<timestamp>` before overwrite.
+
+After install, source the startup snippet from your Hyprland startup file:
+
+```conf
+source = $UserConfigs/HyprFluxStartup.conf
+```
+
+## Profiles
+
+| Profile | When | Power stack |
+|---|---|---|
+| `asus` | ASUSTeK / ROG / TUF / Zephyrus, or live `asusd` | `asus-tlp-power-stack`, `asus-fan-mode`, ASUS Waybar power widgets |
+| `generic` | everything else | `generic-power-stack` (`powerprofilesctl` or `tlpctl`) |
+
+Non-ASUS machines never auto-start the ASUS helpers, even if those scripts happen to exist on disk.
+
+## Modules
+
+See [docs/module-index.md](docs/module-index.md) for the full list. Highlights added in this refresh:
+
+- Dual-monitor workspace banks
+- Wayland compositor OOM protection
+- Terminal combos + session button
+- VibeMouse Waybar status
+- RNNoise / Clear Voice mic stacks
+- Generic power stack for non-ASUS laptops
+- Action Desk-aware Quickshell on-demand launcher
+
+## Checks
 
 ```bash
 ./scripts/check.sh
 ```
 
-## External Project
+## Design
 
-The Codex notifier is maintained as a standalone program:
-
-```text
-https://github.com/vimalinx/codex-task-notify
-```
-
-HyprFlux includes integration notes and config snippets for using it as part of the desktop setup.
-
-## Compatibility
-
-This collection targets:
-
-- Arch Linux or Arch-based systems.
-- Hyprland.
-- Waybar.
-- PipeWire + WirePlumber.
-- foot, tmux, jq, ripgrep, playerctl, and systemd user services for selected modules.
-
-Each module documents its own dependencies.
+- Module-first under `modules/<name>/`
+- Read-only by default unless you run `./install.sh`
+- Public-safe: no shell rc dumps, no API keys, no private agent services
+- Snippets for keybinds / Waybar still need a manual merge where noted in each module README

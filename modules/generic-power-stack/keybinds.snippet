@@ -1,0 +1,6 @@
+# Generic (non-ASUS) power profile cycling.
+bind = , F5, exec, $UserScripts/toggle-power-profile.sh
+bind = $mainMod ALT, P, exec, $UserScripts/toggle-power-profile.sh
+
+# Battery charge threshold cycling when sysfs supports it.
+bind = , xf86Launch1, exec, $UserScripts/battery-toggle.sh

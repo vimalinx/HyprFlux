@@ -1,0 +1,7 @@
+"custom/vibemouse": {
+  "exec": "$HOME/.config/hypr/scripts/waybar-vibemouse-status.sh",
+  "return-type": "json",
+  "interval": 2,
+  "format": "{}",
+  "tooltip": true
+}

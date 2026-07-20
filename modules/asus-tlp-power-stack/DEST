@@ -1,0 +1,4 @@
+toggle-asus-profile.sh|~/.config/hypr/UserScripts/toggle-asus-profile.sh|755
+asus-profile.conf|~/.config/hypr/UserScripts/asus-profile.conf|644
+battery-toggle.sh|~/.config/hypr/UserScripts/battery-toggle.sh|755
+waybar-power-mode.sh|~/.config/hypr/scripts/waybar-power-mode.sh|755

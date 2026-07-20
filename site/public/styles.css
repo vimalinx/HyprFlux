@@ -1,0 +1,120 @@
+:root {
+  --bg0: #0b1018;
+  --bg1: #121a26;
+  --ink: #e8eef8;
+  --muted: #9aa8bd;
+  --accent: #58c4dd;
+  --accent-2: #8ec07c;
+  --line: rgba(232, 238, 248, 0.12);
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-body: "Segoe UI", "PingFang SC", "Noto Sans SC", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-body);
+  background:
+    radial-gradient(1200px 700px at 12% -10%, rgba(88, 196, 221, 0.18), transparent 55%),
+    radial-gradient(900px 600px at 100% 0%, rgba(142, 192, 124, 0.12), transparent 50%),
+    linear-gradient(160deg, var(--bg0), var(--bg1) 55%, #0a0f16);
+}
+
+.stage {
+  min-height: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(3rem, 10vh, 6rem) 1.4rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.brand {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 7vw, 4.4rem);
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  color: var(--accent);
+}
+
+h1 {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  line-height: 1.25;
+}
+
+.lede {
+  margin: 0 0 1.8rem;
+  max-width: 38rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.install {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.7rem;
+  align-items: stretch;
+  margin-bottom: 1rem;
+}
+
+.cmd {
+  border: 1px solid var(--line);
+  background: rgba(8, 12, 18, 0.72);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: clamp(0.78rem, 2.1vw, 0.95rem);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.copy {
+  border: 0;
+  border-radius: 12px;
+  padding: 0 1.2rem;
+  background: linear-gradient(135deg, var(--accent), #3aa0c2);
+  color: #041018;
+  font-weight: 700;
+  cursor: pointer;
+}
+.copy:hover { filter: brightness(1.05); }
+.copy.copied { background: var(--accent-2); }
+
+.hint {
+  margin: 0.35rem 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.hint code {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  color: #d7e6f5;
+}
+
+.links {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+}
+.links a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.15rem;
+}
+.links a:hover { color: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 640px) {
+  .install { grid-template-columns: 1fr; }
+  .copy { min-height: 2.8rem; }
+}

@@ -1,0 +1,27 @@
+# Independent workspace banks for a laptop panel and a side display.
+# Edit monitor names before use. Example uses eDP-1 + DP-1.
+# Hyprland workspace IDs are global: side display uses 11-20 while helpers present local slots 1-10.
+
+# Laptop panel: local slots 1-10 map directly to workspace IDs 1-10.
+workspace = 1, monitor:eDP-1, persistent:true
+workspace = 2, monitor:eDP-1, persistent:true
+workspace = 3, monitor:eDP-1, persistent:true
+workspace = 4, monitor:eDP-1, persistent:true
+workspace = 5, monitor:eDP-1, persistent:true
+workspace = 6, monitor:eDP-1, persistent:true
+workspace = 7, monitor:eDP-1, persistent:true
+workspace = 8, monitor:eDP-1, persistent:true
+workspace = 9, monitor:eDP-1, persistent:true
+workspace = 10, monitor:eDP-1, persistent:true
+
+# ARZOPA side display: local slots 1-10 map to workspace IDs 11-20.
+workspace = 11, monitor:DP-1, persistent:true
+workspace = 12, monitor:DP-1, persistent:true
+workspace = 13, monitor:DP-1, persistent:true
+workspace = 14, monitor:DP-1, persistent:true
+workspace = 15, monitor:DP-1, persistent:true
+workspace = 16, monitor:DP-1, persistent:true
+workspace = 17, monitor:DP-1, persistent:true
+workspace = 18, monitor:DP-1, persistent:true
+workspace = 19, monitor:DP-1, persistent:true
+workspace = 20, monitor:DP-1, persistent:true

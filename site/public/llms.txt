@@ -1,0 +1,6 @@
+# HyprFlux
+> One-line Arch Linux + Hyprland desktop module installer from Vimalinx.
+
+- Site: https://arch.vimalinx.com/
+- Install: curl -fsSL https://arch.vimalinx.com/install | bash
+- Source: https://github.com/vimalinx/HyprFlux

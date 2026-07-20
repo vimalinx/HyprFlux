@@ -1,0 +1,3 @@
+HyprSessionButton.py|~/.config/hypr/UserScripts/HyprSessionButton.py|755
+hypr-desktop-session-autosave.service|~/.config/systemd/user/hypr-desktop-session-autosave.service|644
+hypr-desktop-session-autosave.timer|~/.config/systemd/user/hypr-desktop-session-autosave.timer|644

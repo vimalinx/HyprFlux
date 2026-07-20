@@ -1,0 +1,3 @@
+safe-mic-lowgain-filter.conf.template|~/.config/pipewire/safe-mic-lowgain-filter.conf|644
+safe-mic-lowgain.service|~/.config/systemd/user/safe-mic-lowgain.service|644
+safe-mic-set-default|~/.local/bin/safe-mic-set-default|755

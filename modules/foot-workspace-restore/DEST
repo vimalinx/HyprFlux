@@ -1,0 +1,4 @@
+FootWorkspaceSnapshotDaemon.sh|~/.config/hypr/UserScripts/FootWorkspaceSnapshotDaemon.sh|755
+SaveFootWorkspaceSnapshot.sh|~/.config/hypr/UserScripts/SaveFootWorkspaceSnapshot.sh|755
+RestoreTmuxWorkspaces.sh|~/.config/hypr/UserScripts/RestoreTmuxWorkspaces.sh|755
+foot-workspace-allowlist.conf|~/.config/hypr/UserScripts/foot-workspace-allowlist.conf|644

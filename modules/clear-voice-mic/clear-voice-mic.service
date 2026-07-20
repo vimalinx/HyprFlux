@@ -1,0 +1,14 @@
+[Unit]
+Description=Clear voice WebRTC virtual microphone
+After=pipewire.service pipewire-pulse.service wireplumber.service safe-mic-lowgain.service
+Wants=pipewire.service pipewire-pulse.service wireplumber.service safe-mic-lowgain.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pipewire -c %h/.config/pipewire/clear-voice-mic-webrtc.conf
+ExecStartPost=%h/.local/bin/safe-mic-set-default effect_output.codex-mic-clearvoice
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

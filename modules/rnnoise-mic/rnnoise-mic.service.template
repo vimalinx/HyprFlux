@@ -1,0 +1,16 @@
+[Unit]
+Description=RNNoise virtual microphone
+After=pipewire.service pipewire-pulse.service wireplumber.service safe-mic-lowgain.service
+Wants=pipewire.service pipewire-pulse.service wireplumber.service safe-mic-lowgain.service
+
+[Service]
+Type=simple
+Environment=LADSPA_PATH=%h/.local/lib/ladspa
+Environment=SAFE_MIC_RAW_VOLUME=55%
+ExecStart=/usr/bin/pipewire -c %h/.config/pipewire/rnnoise-mic-filter.conf
+ExecStartPost=%h/.local/bin/safe-mic-set-default effect_output.codex-mic-rnnoise
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

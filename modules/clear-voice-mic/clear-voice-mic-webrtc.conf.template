@@ -1,0 +1,51 @@
+context.properties = {
+    log.level = 0
+}
+
+context.spa-libs = {
+    audio.convert.* = audioconvert/libspa-audioconvert
+    support.*       = support/libspa-support
+    aec.*           = aec/libspa-aec-webrtc
+}
+
+context.modules = [
+    { name = libpipewire-module-rt
+        flags = [ ifexists nofail ]
+    }
+    { name = libpipewire-module-protocol-native }
+    { name = libpipewire-module-client-node }
+    { name = libpipewire-module-adapter }
+    { name = libpipewire-module-echo-cancel
+        args = {
+            library.name = aec/libspa-aec-webrtc
+            monitor.mode = true
+            audio.rate = 48000
+            audio.channels = 2
+            audio.position = [ FL FR ]
+            aec.args = "webrtc.gain_control=true webrtc.noise_suppression=true webrtc.transient_suppression=true webrtc.voice_detection=true"
+            capture.props = {
+                node.name        = "effect_input.codex-mic-clearvoice"
+                node.description = "Clear Voice Microphone Capture"
+                node.target      = "REPLACE_WITH_YOUR_ALSA_SOURCE"  # e.g. alsa_input.pci-....analog-stereo
+                node.passive     = true
+            }
+            source.props = {
+                node.name        = "effect_output.codex-mic-clearvoice"
+                node.description = "Clear Voice Microphone"
+                media.class      = "Audio/Source"
+                node.virtual     = true
+            }
+            sink.props = {
+                node.name        = "effect_input.codex-mic-clearvoice-monitor"
+                node.description = "Clear Voice Playback Monitor"
+                node.passive     = true
+            }
+            playback.props = {
+                node.name        = "effect_output.codex-mic-clearvoice-monitor"
+                node.description = "Clear Voice Playback Monitor"
+                node.target      = "alsa_output.pci-0000_00_1f.3.analog-stereo"
+                node.passive     = true
+            }
+        }
+    }
+]

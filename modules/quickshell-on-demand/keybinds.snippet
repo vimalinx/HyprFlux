@@ -1,1 +1,5 @@
-bind = $mainMod, A, exec, $HOME/.config/quickshell/scripts/qs-on-demand.sh overview-toggle
+# Quickshell on-demand surfaces (Action Desk / status / overview).
+bind = $mainMod, Tab, exec, ~/.config/quickshell/scripts/qs-on-demand.sh overview-toggle
+bind = $mainMod, A, exec, ~/.config/quickshell/scripts/qs-on-demand.sh action-toggle
+# Super+T opens the Terminals tab inside Action Desk.
+bind = $mainMod, T, exec, ~/.config/quickshell/scripts/qs-on-demand.sh terminals-open

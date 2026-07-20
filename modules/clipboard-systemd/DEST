@@ -1,0 +1,3 @@
+cliphist.service|~/.config/systemd/user/cliphist.service|644
+cliphist-image.service|~/.config/systemd/user/cliphist-image.service|644
+wl-copy-wrapper|~/.local/bin/wl-copy|755

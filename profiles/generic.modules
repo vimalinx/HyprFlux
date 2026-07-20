@@ -1,0 +1,3 @@
+# Non-ASUS power modules. Used when vendor detection is not ASUS.
+generic-power-stack
+waybar-power-status

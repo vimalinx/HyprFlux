@@ -1,0 +1,2 @@
+rnnoise-mic-filter.conf|~/.config/pipewire/rnnoise-mic-filter.conf|644
+rnnoise-mic.service.template|~/.config/systemd/user/rnnoise-mic.service|644

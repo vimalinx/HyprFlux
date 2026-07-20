@@ -2,12 +2,18 @@
 set -euo pipefail
 
 scale="${WECHAT_SCALE_FACTOR:-1.6}"
+xweb_scale="${WECHAT_XWEB_SCALE_FACTOR:-${scale}}"
+xweb_scale_injector="${HOME}/.local/lib/wechat-xweb-scale/libwechat-xweb-scale.so"
 fcitx_scale_script="${HOME}/.config/hypr/UserScripts/FcitxWechatCandidateScale.sh"
-wechat_binary="${WECHAT_BINARY:-/opt/wechat/wechat}"
 
-if command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
-  existing_addr="$(hyprctl -j clients 2>/dev/null | jq -r '.[] | select(.class == "wechat") | .address' | head -n1)"
-  detected_scale="$(hyprctl -j monitors 2>/dev/null | jq -r '.[] | select(.focused == true) | .scale' | head -n1)"
+if command -v hyprctl >/dev/null 2>&1; then
+  if command -v jq >/dev/null 2>&1; then
+    existing_addr="$(hyprctl -j clients 2>/dev/null | jq -r '.[] | select(.class == "wechat") | .address' | head -n1)"
+    detected_scale="$(hyprctl -j monitors 2>/dev/null | jq -r '.[] | select(.focused == true) | .scale' | head -n1)"
+  else
+    existing_addr=""
+    detected_scale=""
+  fi
 
   if [[ -n "${existing_addr}" && "${existing_addr}" != "null" ]]; then
     if [[ -x "${fcitx_scale_script}" ]]; then
@@ -30,8 +36,17 @@ export GTK_IM_MODULE="${GTK_IM_MODULE:-fcitx}"
 export QT_IM_MODULE="${QT_IM_MODULE:-fcitx}"
 export XMODIFIERS="${XMODIFIERS:-@im=fcitx}"
 
+if [[ -r "${xweb_scale_injector}" ]]; then
+  export WECHAT_XWEB_SCALE_FACTOR="${xweb_scale}"
+  case ":${LD_PRELOAD:-}:" in
+    *":${xweb_scale_injector}:"*) ;;
+    "::") export LD_PRELOAD="${xweb_scale_injector}" ;;
+    *) export LD_PRELOAD="${xweb_scale_injector}:${LD_PRELOAD}" ;;
+  esac
+fi
+
 if [[ -x "${fcitx_scale_script}" ]]; then
   "${fcitx_scale_script}" --set wechat >/dev/null 2>&1 || true
 fi
 
-exec "$wechat_binary" "$@"
+exec /opt/wechat/wechat "$@"
