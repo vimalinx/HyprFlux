@@ -5,22 +5,37 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "$repo_root/scripts/ui.sh"
+# shellcheck source=/dev/null
+source "$repo_root/scripts/net-china.sh"
 
 DOTS_URL="${HF_DOTS_URL:-https://github.com/JaKooLit/Hyprland-Dots.git}"
 DOTS_REF="${HF_DOTS_REF:-main}"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/hyprflux/Hyprland-Dots"
 
 hf_section "Base dots (JaKooLit)"
-hf_info "source: $DOTS_URL ($DOTS_REF)"
+resolved="$(hf_resolve_github_url "$DOTS_URL")"
+hf_info "source: $resolved ($DOTS_REF)"
 
 mkdir -p "$(dirname "$CACHE_DIR")"
 if [[ -d "$CACHE_DIR/.git" ]]; then
-  git -C "$CACHE_DIR" fetch --depth 1 origin "$DOTS_REF"
-  git -C "$CACHE_DIR" checkout "$DOTS_REF"
-  git -C "$CACHE_DIR" pull --ff-only origin "$DOTS_REF" || true
-else
+  git -C "$CACHE_DIR" remote set-url origin "$resolved" >/dev/null 2>&1 || true
+  if ! git -C "$CACHE_DIR" fetch --depth 1 origin "$DOTS_REF"; then
+    hf_warn "dots fetch failed — recloning"
+    rm -rf "$CACHE_DIR"
+  fi
+fi
+
+if [[ ! -d "$CACHE_DIR/.git" ]]; then
   rm -rf "$CACHE_DIR"
-  git clone --depth 1 --branch "$DOTS_REF" "$DOTS_URL" "$CACHE_DIR"
+  if ! hf_git_clone_github "$DOTS_URL" "$CACHE_DIR" --depth 1 --branch "$DOTS_REF"; then
+    hf_err "Failed to clone Hyprland-Dots (GitHub + mirrors)"
+    exit 1
+  fi
+else
+  git -C "$CACHE_DIR" checkout -B "$DOTS_REF" "origin/$DOTS_REF" 2>/dev/null \
+    || git -C "$CACHE_DIR" checkout -B "$DOTS_REF" FETCH_HEAD
+  git -C "$CACHE_DIR" reset --hard "origin/$DOTS_REF" 2>/dev/null \
+    || git -C "$CACHE_DIR" reset --hard FETCH_HEAD
 fi
 
 if [[ ! -d "$CACHE_DIR/config" ]]; then
@@ -32,7 +47,6 @@ stamp="$(date +%Y%m%d-%H%M%S)"
 backup_root="$HOME/.config/hyprflux-pre-dots-$stamp"
 mkdir -p "$backup_root"
 
-# Copy every top-level dots config tree into ~/.config, backing up collisions.
 while IFS= read -r -d '' dir; do
   name="$(basename "$dir")"
   dest="$HOME/.config/$name"
@@ -42,7 +56,6 @@ while IFS= read -r -d '' dir; do
     hf_info "backed up ~/.config/$name -> $backup_root/$name"
   fi
   mkdir -p "$dest"
-  # Prefer rsync when available for cleaner updates.
   if command -v rsync >/dev/null 2>&1; then
     rsync -a --delete "$dir/" "$dest/"
   else
@@ -52,7 +65,6 @@ while IFS= read -r -d '' dir; do
   hf_ok "installed base config: $name"
 done < <(find "$CACHE_DIR/config" -mindepth 1 -maxdepth 1 -type d -print0)
 
-# Ensure XDG dirs exist for a fresh Arch user.
 xdg-user-dirs-update >/dev/null 2>&1 || true
 
 hf_ok "JaKooLit base dots installed"

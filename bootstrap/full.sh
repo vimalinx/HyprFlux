@@ -104,6 +104,11 @@ chmod +x \
   "$repo_root/scripts/"*.sh \
   "$repo_root/session/"*.sh
 
+# Export China / mirror prefs for nested scripts.
+export HF_CN="${HF_CN:-0}"
+export HF_GITHUB_MIRROR="${HF_GITHUB_MIRROR:-}"
+
+"$repo_root/bootstrap/ensure-arch-mirrors.sh" || true
 "$repo_root/bootstrap/install-packages.sh" "$profile"
 "$repo_root/bootstrap/install-base-dots.sh"
 

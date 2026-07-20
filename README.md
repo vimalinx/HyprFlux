@@ -40,6 +40,14 @@ HF_YES=1 bash <(curl -fsSL https://arch.vimalinx.com/install)
 HF_PROFILE=generic HF_YES=1 bash <(curl -fsSL https://arch.vimalinx.com/install)
 ```
 
+China networks (GitHub blocked/slow):
+
+```bash
+HF_CN=1 bash <(curl -fsSL https://arch.vimalinx.com/install)
+```
+
+The installer auto-detects `github.com` failures and retries via public GitHub mirrors (`ghfast.top`, `gh-proxy.com`, …). `HF_CN=1` also prefers China Arch pacman mirrors.
+
 Or clone locally:
 
 ```bash
