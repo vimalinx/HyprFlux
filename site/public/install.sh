@@ -148,7 +148,7 @@ git_clone_fail_hint() {
 HF_VENDOR_TAR="${HF_VENDOR_TAR:-https://arch.vimalinx.com/vendor/HyprFlux-main.tar.gz}"
 
 sync_source_tarball() {
-  local url="$HF_VENDOR_TAR" tmp
+  local url="$HF_VENDOR_TAR" cache archive attempt
   info "Trying vendor tarball: $url"
   if ! have curl; then
     warn "curl required for vendor tarball"
@@ -158,23 +158,33 @@ sync_source_tarball() {
     warn "tar required to extract vendor tarball"
     return 1
   fi
-  tmp="$(mktemp -d)"
-  if ! curl -fsSL --connect-timeout 8 --max-time 120 \
-       --speed-limit 1024 --speed-time 20 --retry 2 \
-       -o "$tmp/HyprFlux-main.tar.gz" "$url"; then
-    rm -rf "$tmp"
-    warn "Vendor tarball download failed"
-    return 1
-  fi
+  # Persist + resume: slow CN links often need >2 minutes and drop mid-transfer.
+  cache="${XDG_CACHE_HOME:-$HOME/.cache}/hyprflux"
+  mkdir -p "$cache"
+  archive="$cache/HyprFlux-main.tar.gz"
+  for attempt in 1 2 3 4 5; do
+    info "Vendor tarball download attempt $attempt/5 (resumable)"
+    if curl -fL --connect-timeout 15 --max-time 900 \
+         --retry 0 -C - \
+         -o "$archive" "$url"; then
+      break
+    fi
+    warn "Vendor tarball attempt $attempt incomplete — will resume"
+    sleep 2
+    if [[ "$attempt" -eq 5 ]]; then
+      warn "Vendor tarball download failed after resumes"
+      return 1
+    fi
+  done
   mkdir -p "$(dirname "$HF_DIR")"
   rm -rf "$HF_DIR"
   mkdir -p "$HF_DIR"
-  if ! tar -xzf "$tmp/HyprFlux-main.tar.gz" -C "$HF_DIR"; then
-    rm -rf "$tmp" "$HF_DIR"
-    warn "Vendor tarball extract failed"
+  if ! tar -xzf "$archive" -C "$HF_DIR"; then
+    rm -rf "$HF_DIR"
+    rm -f "$archive"
+    warn "Vendor tarball extract failed (corrupt download cleared)"
     return 1
   fi
-  rm -rf "$tmp"
   if [[ ! -f "$HF_DIR/bootstrap/full.sh" ]]; then
     rm -rf "$HF_DIR"
     warn "Vendor tarball missing bootstrap/full.sh"
@@ -336,4 +346,4 @@ chmod +x ./bootstrap/*.sh ./install.sh ./scripts/*.sh ./session/*.sh 2>/dev/null
 ./bootstrap/full.sh "${args[@]}"
 ok "Full desktop bootstrap finished — reboot and log into Hyprland"
 
-# vendor-tarball 2026-07-20T23:10:00+08:00
+# vendor-tarball-resume 2026-07-20T23:20:00+08:00

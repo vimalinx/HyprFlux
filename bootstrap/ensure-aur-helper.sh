@@ -112,16 +112,28 @@ install_yay_from_github_release() {
     "https://github.com/Jguer/yay/releases/download/v${ver}/${asset}"
   )
 
-  local url max_time
+  local url max_time attempt
   for url in "${urls[@]}"; do
     if [[ "$url" == https://arch.vimalinx.com/* ]]; then
-      max_time=300
+      max_time=900
     else
-      max_time=180
+      max_time=300
     fi
     hf_info "Trying yay release: $url"
-    if curl -fL --connect-timeout 8 --max-time "$max_time" --speed-limit 1024 --speed-time 20 --retry 2 "$url" -o "$tdir/$asset"; then
-      tar -xzf "$tdir/$asset" -C "$tdir"
+    rm -f "$tdir/$asset"
+    for attempt in 1 2 3 4 5; do
+      if curl -fL --connect-timeout 15 --max-time "$max_time" --retry 0 -C - \
+           "$url" -o "$tdir/$asset"; then
+        break
+      fi
+      hf_warn "yay download attempt $attempt incomplete — resume"
+      sleep 2
+      if [[ "$attempt" -eq 5 ]]; then
+        hf_warn "Release download failed: $url"
+        continue 2
+      fi
+    done
+    if tar -xzf "$tdir/$asset" -C "$tdir"; then
       local bin
       bin="$(find "$tdir" -type f -name yay -perm -111 | head -n1)"
       if [[ -n "$bin" ]]; then
@@ -130,7 +142,7 @@ install_yay_from_github_release() {
       fi
       hf_warn "Release archive had no yay binary"
     else
-      hf_warn "Release download failed: $url"
+      hf_warn "Release archive extract failed: $url"
     fi
   done
   return 1
