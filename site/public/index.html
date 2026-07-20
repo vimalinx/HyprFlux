@@ -4,32 +4,108 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HyprFlux · Arch + Hyprland</title>
-  <meta name="description" content="HyprFlux full desktop bootstrap for Arch Linux + Hyprland." />
+  <meta name="description" content="HyprFlux full desktop bootstrap for Arch Linux + Hyprland, with China network support." />
   <link rel="canonical" href="https://arch.vimalinx.com/" />
   <meta property="og:title" content="HyprFlux" />
   <meta property="og:description" content="One-line full Arch + Hyprland desktop bootstrap." />
   <meta property="og:url" content="https://arch.vimalinx.com/" />
   <meta property="og:type" content="website" />
   <link rel="stylesheet" href="/styles.css" />
-  <!-- deploy: full-bootstrap-en -->
+  <!-- deploy: install-options-v2 -->
 </head>
 <body>
   <main class="stage">
     <p class="brand">HyprFlux</p>
     <h1>Full Arch Hyprland desktop, one command</h1>
-    <p class="lede">Turns a minimal Arch install into a JaKooLit-based Hyprland desktop, then overlays HyprFlux modules (ASUS or generic). Copy, run, reboot, log in.</p>
+    <p class="lede">Turns a minimal Arch install into a JaKooLit-based Hyprland desktop, then overlays HyprFlux modules. Pick a command, copy, run, reboot, log in.</p>
 
-    <section class="install" aria-label="install command">
-      <div class="cmd" id="cmd">bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</div>
-      <button type="button" id="copy" class="copy">Copy</button>
+    <section class="options" aria-label="install options">
+      <article class="option">
+        <div class="option-head">
+          <h2>Recommended</h2>
+          <span class="tag">global</span>
+        </div>
+        <p class="option-desc">Best default. Real TTY for sudo / yes-no prompts.</p>
+        <div class="install">
+          <div class="cmd">bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</div>
+          <button type="button" class="copy" data-copy>Copy</button>
+        </div>
+      </article>
+
+      <article class="option option-cn">
+        <div class="option-head">
+          <h2><span class="flag" aria-hidden="true">🇨🇳</span> China network</h2>
+          <span class="tag tag-cn">CN</span>
+        </div>
+        <p class="option-desc">Forces GitHub mirrors + China Arch pacman mirrors. Use this if github.com is blocked or slow.</p>
+        <div class="install">
+          <div class="cmd">HF_CN=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</div>
+          <button type="button" class="copy copy-cn" data-copy>Copy</button>
+        </div>
+      </article>
+
+      <article class="option">
+        <div class="option-head">
+          <h2>Non-interactive</h2>
+          <span class="tag">auto-yes</span>
+        </div>
+        <p class="option-desc">Skips confirmation prompts. Still asks for sudo password when needed.</p>
+        <div class="install">
+          <div class="cmd">HF_YES=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</div>
+          <button type="button" class="copy" data-copy>Copy</button>
+        </div>
+      </article>
+
+      <article class="option">
+        <div class="option-head">
+          <h2>🇨🇳 China + non-interactive</h2>
+          <span class="tag tag-cn">CN</span>
+        </div>
+        <p class="option-desc">China mirrors, no confirmation prompts.</p>
+        <div class="install">
+          <div class="cmd">HF_CN=1 HF_YES=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</div>
+          <button type="button" class="copy copy-cn" data-copy>Copy</button>
+        </div>
+      </article>
+
+      <article class="option">
+        <div class="option-head">
+          <h2>Generic power stack</h2>
+          <span class="tag">non-ASUS</span>
+        </div>
+        <p class="option-desc">Force non-ASUS power profile helpers (powerprofilesctl / TLP).</p>
+        <div class="install">
+          <div class="cmd">HF_PROFILE=generic HF_YES=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</div>
+          <button type="button" class="copy" data-copy>Copy</button>
+        </div>
+      </article>
+
+      <article class="option">
+        <div class="option-head">
+          <h2>ASUS power stack</h2>
+          <span class="tag">ROG / TUF</span>
+        </div>
+        <p class="option-desc">Force ASUS asusctl / TLP helpers even if detection is unsure.</p>
+        <div class="install">
+          <div class="cmd">HF_PROFILE=asus HF_YES=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</div>
+          <button type="button" class="copy" data-copy>Copy</button>
+        </div>
+      </article>
+
+      <article class="option">
+        <div class="option-head">
+          <h2>Pipe form</h2>
+          <span class="tag">compat</span>
+        </div>
+        <p class="option-desc">Works too; prefer process-substitution commands above when possible.</p>
+        <div class="install">
+          <div class="cmd">curl -fsSL https://arch.vimalinx.com/install | bash</div>
+          <button type="button" class="copy" data-copy>Copy</button>
+        </div>
+      </article>
     </section>
 
-    <p class="hint">Recommended form above keeps sudo / yes-no prompts on a real TTY.</p>
-    <p class="hint">Missing <code>git</code> and other basics are installed automatically (sudo password required).</p>
-    <p class="hint">China networks: auto-falls back to GitHub mirrors; force with <code>HF_CN=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</code></p>
-    <p class="hint">Pipe form: <code>curl -fsSL https://arch.vimalinx.com/install | bash</code></p>
-    <p class="hint">Non-interactive: <code>HF_YES=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</code></p>
-    <p class="hint">Force generic power stack: <code>HF_PROFILE=generic HF_YES=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</code></p>
+    <p class="footnote">Missing <code>git</code> is installed automatically. After install: reboot → SDDM → Hyprland.</p>
 
     <nav class="links">
       <a href="https://github.com/vimalinx/HyprFlux">GitHub</a>
