@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Apply one HyprFlux module using an optional DEST map.
-# DEST lines: source|destination|mode
-# destination may start with ~/ and is expanded.
+# 应用单个 HyprFlux 模块（读取可选 DEST 映射）。
+# DEST 行格式: 源相对路径|目标路径|权限
+# 目标路径可用 ~/ 开头。
 
 set -euo pipefail
 
@@ -13,13 +13,13 @@ module_name="${1:-}"
 dry_run="${HF_DRY_RUN:-0}"
 
 if [[ -z "$module_name" ]]; then
-  echo "usage: $0 <module-name>" >&2
+  echo "用法: $0 <模块名>" >&2
   exit 2
 fi
 
 module_dir="$repo_root/modules/$module_name"
 if [[ ! -d "$module_dir" ]]; then
-  hf_err "unknown module: $module_name"
+  hf_err "未知模块: $module_name"
   exit 1
 fi
 
@@ -37,7 +37,7 @@ backup_if_needed() {
   if [[ -e "$dest" && ! -L "$dest" ]]; then
     local bak="${dest}.hyprflux-bak.$(date +%Y%m%d-%H%M%S)"
     if [[ "$dry_run" == "1" ]]; then
-      hf_info "backup $dest -> $bak"
+      hf_info "将备份 $dest -> $bak"
     else
       cp -a "$dest" "$bak"
     fi
@@ -51,7 +51,7 @@ apply_dest_line() {
   dest="$(expand_dest "$dest_spec")"
 
   if [[ ! -e "$src" ]]; then
-    hf_warn "missing source in $module_name: $src_rel"
+    hf_warn "$module_name 缺少源文件: $src_rel"
     return 0
   fi
 
@@ -68,7 +68,7 @@ apply_dest_line() {
 
 if [[ -x "$module_dir/apply.sh" ]]; then
   if [[ "$dry_run" == "1" ]]; then
-    hf_info "would run $module_name/apply.sh"
+    hf_info "将执行 $module_name/apply.sh"
   else
     "$module_dir/apply.sh"
   fi
@@ -84,4 +84,4 @@ if [[ -f "$module_dir/DEST" ]]; then
   exit 0
 fi
 
-hf_warn "$module_name has no DEST or apply.sh (docs-only / snippet module)"
+hf_warn "$module_name 没有 DEST / apply.sh（仅文档或片段，需手动合并）"

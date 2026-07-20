@@ -19,19 +19,20 @@
     <p class="lede">从真实华硕 / 通用 Hyprland 工作站提炼的模块集。复制命令，装完再按需合并快捷键与 Waybar。</p>
 
     <section class="install" aria-label="install command">
-      <div class="cmd" id="cmd">curl -fsSL https://arch.vimalinx.com/install | bash</div>
+      <div class="cmd" id="cmd">bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</div>
       <button type="button" id="copy" class="copy">复制</button>
     </section>
 
-    <p class="hint">缺 git 等依赖时会自动 <code>sudo pacman/apt/dnf</code> 安装，并提示输入管理员密码。</p>
-    <p class="hint">非交互：<code>HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash</code></p>
-    <p class="hint">强制通用电源栈：<code>HF_PROFILE=generic HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash</code></p>
-    <p class="hint">若管道导致密码难输，可用：<code>bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</code></p>
+    <p class="hint">推荐上面这行：确认提示和 sudo 密码都会走真实终端，不会被管道误触退出。</p>
+    <p class="hint">缺 git 等依赖时会自动安装，并提示输入管理员密码。</p>
+    <p class="hint">等价写法：<code>curl -fsSL https://arch.vimalinx.com/install | bash</code></p>
+    <p class="hint">非交互：<code>HF_YES=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</code></p>
+    <p class="hint">强制通用电源栈：<code>HF_PROFILE=generic HF_YES=1 bash &lt;(curl -fsSL https://arch.vimalinx.com/install)</code></p>
 
     <nav class="links">
       <a href="https://github.com/vimalinx/HyprFlux">GitHub</a>
-      <a href="/install">install script</a>
-      <a href="https://github.com/vimalinx/HyprFlux/blob/main/docs/safety.md">Safety</a>
+      <a href="/install">安装脚本</a>
+      <a href="https://github.com/vimalinx/HyprFlux/blob/main/docs/safety.md">安全说明</a>
     </nav>
   </main>
   <script src="/app.js"></script>

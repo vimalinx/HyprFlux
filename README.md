@@ -17,13 +17,15 @@ HyprFlux packages the reusable pieces of a real Arch + Hyprland workstation as s
 One-liner (landing page: [arch.vimalinx.com](https://arch.vimalinx.com)):
 
 ```bash
-curl -fsSL https://arch.vimalinx.com/install | bash
+bash <(curl -fsSL https://arch.vimalinx.com/install)
 ```
 
-If `git` (or other basics) is missing, the bootstrap installs it with `sudo` and asks for the admin password on the real TTY. Prefer this form if the pipe makes password entry awkward:
+缺 `git` 等依赖时会自动 `sudo` 安装并提示管理员密码。确认提示从真实终端读取，避免 `curl | bash` 管道误触退出。
+
+兼容写法：
 
 ```bash
-bash <(curl -fsSL https://arch.vimalinx.com/install)
+curl -fsSL https://arch.vimalinx.com/install | bash
 ```
 
 Non-interactive / force generic power stack:

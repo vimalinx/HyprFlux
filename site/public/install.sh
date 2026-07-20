@@ -31,7 +31,7 @@ banner() {
   cat <<BANNER
 ${CYAN}${BOLD}
   ┌──────────────────────────────────────────────┐
-  │   HyprFlux · one-line installer              │
+  │   HyprFlux · 一键安装                        │
   │   ${TEXT}arch.vimalinx.com${CYAN}                          │
   └──────────────────────────────────────────────┘
 ${RESET}
@@ -129,11 +129,11 @@ if ! have curl && ! have wget; then
 fi
 
 ok "依赖就绪"
-info "repo: $HF_REPO_URL ($HF_REF)"
-info "target: $HF_DIR"
+info "仓库: $HF_REPO_URL ($HF_REF)"
+info "目录: $HF_DIR"
 
 if [[ -d "$HF_DIR/.git" ]]; then
-  info "已有仓库 — 拉取 $HF_REF"
+  info "发现已有仓库 — 正在更新到 $HF_REF"
   git -C "$HF_DIR" fetch --depth 1 origin "$HF_REF"
   git -C "$HF_DIR" checkout "$HF_REF"
   git -C "$HF_DIR" pull --ff-only origin "$HF_REF" || true
@@ -141,7 +141,7 @@ else
   mkdir -p "$(dirname "$HF_DIR")"
   git clone --depth 1 --branch "$HF_REF" "$HF_REPO_URL" "$HF_DIR"
 fi
-ok "源码就绪"
+ok "源码已就绪"
 
 args=()
 case "$HF_PROFILE" in
@@ -155,8 +155,8 @@ esac
 [[ "$HF_YES" == "1" ]] && args+=(-y)
 [[ "$HF_OPTIONAL" == "1" ]] && args+=(--with-optional)
 
-info "运行 ./install.sh ${args[*]:-}"
+info "开始执行 ./install.sh ${args[*]:-}"
 cd "$HF_DIR"
 chmod +x ./install.sh
 ./install.sh "${args[@]}"
-ok "完成 — 请按模块 README 合并快捷键/Waybar，并 source HyprFluxStartup.conf"
+ok "完成 — 请按模块 README 合并快捷键/Waybar，并在启动配置里 source HyprFluxStartup.conf"
