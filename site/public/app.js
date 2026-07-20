@@ -5,10 +5,10 @@ const text = cmd.textContent.trim();
 btn.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(text);
-    btn.textContent = "已复制";
+    btn.textContent = "Copied";
     btn.classList.add("copied");
     setTimeout(() => {
-      btn.textContent = "复制";
+      btn.textContent = "Copy";
       btn.classList.remove("copied");
     }, 1600);
   } catch (_) {
@@ -17,6 +17,6 @@ btn.addEventListener("click", async () => {
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
-    btn.textContent = "请手动复制";
+    btn.textContent = "Select & copy";
   }
 });

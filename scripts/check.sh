@@ -10,7 +10,7 @@ while IFS= read -r file; do
   bash -n "$file"
 done < <(
   {
-    find modules scripts session -type f
+    find modules scripts session bootstrap -type f
     printf '%s\n' install.sh
   } | sort -u | while IFS= read -r candidate; do
     [[ -f "$candidate" ]] || continue

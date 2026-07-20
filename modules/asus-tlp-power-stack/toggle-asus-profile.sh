@@ -284,7 +284,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if ! command -v flock >/dev/null 2>&1; then
-    notify -u critical "电源模式" "未找到 flock，无法安全切换" -i dialog-error
+    notify -u critical "Power mode" "flock not found; cannot switch safely" -i dialog-error
     log "ERROR: flock not found"
     exit 1
 fi
@@ -311,7 +311,7 @@ if [ -z "$TARGET_PROFILE" ] && [ "$FORCE" -ne 1 ]; then
 fi
 
 if ! command -v asusctl >/dev/null 2>&1; then
-    notify -u critical "电源模式" "未找到 asusctl" -i dialog-error
+    notify -u critical "Power mode" "asusctl not found" -i dialog-error
     log "ERROR: asusctl not found"
     exit 1
 fi
@@ -370,7 +370,7 @@ if ! {
         && asusctl profile set -b "$NEXT" \
         && asusctl profile set "$NEXT"
 } 2>&1 | tee -a "$LOG_FILE"; then
-    notify -u critical "电源模式" "切换 ASUS 档位失败" -i dialog-error
+    notify -u critical "Power mode" "Failed to switch ASUS profile" -i dialog-error
     log "ERROR: failed to set ASUS profile: $NEXT"
     exit 1
 fi
@@ -415,5 +415,5 @@ if [ "$NEXT" = "Quiet" ]; then
     fi
 fi
 
-notify "电源模式" "已切换到: $MODE_MSG\nASUS: $NEXT\n$TLP_MSG\n$DISPLAY_MSG${QUIET_TWEAKS_MSG:+\n$QUIET_TWEAKS_MSG}${BT_MSG:+\n$BT_MSG}" -i "$ICON"
+notify "Power mode" "Switched to: $MODE_MSG\nASUS: $NEXT\n$TLP_MSG\n$DISPLAY_MSG${QUIET_TWEAKS_MSG:+\n$QUIET_TWEAKS_MSG}${BT_MSG:+\n$BT_MSG}" -i "$ICON"
 log "Notification sent"

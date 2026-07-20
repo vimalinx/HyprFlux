@@ -17,7 +17,7 @@ notify() {
 mkdir -p "$RUNTIME_DIR"
 
 if ! command -v asusctl >/dev/null 2>&1 || ! command -v flock >/dev/null 2>&1; then
-    notify -u critical "电池充电阈值" "缺少 asusctl 或 flock"
+    notify -u critical "Battery limit" "asusctl or flock is missing"
     exit 1
 fi
 
@@ -39,24 +39,24 @@ case "$CURRENT" in
     80)
         NEW=60
         ICON="battery-caution"
-        MSG="长时间插电保护 (60%)"
+        MSG="Long-plug protection (60%)"
         ;;
     60)
         NEW=100
         ICON="battery-full"
-        MSG="临时完全充电 (100%)"
+        MSG="Temporary full charge (100%)"
         ;;
     *)
         NEW=80
         ICON="battery-good"
-        MSG="日常保护 (80%)"
+        MSG="Daily protection (80%)"
         ;;
 esac
 
 # asusd owns persistence and the firmware interface, so no root shell or
 # parallel /etc state file is needed.
 if ! asusctl battery limit "$NEW" >/dev/null 2>&1; then
-    notify -u critical "电池充电阈值" "切换到 ${NEW}% 失败"
+    notify -u critical "Battery limit" "Failed to switch to ${NEW}%"
     exit 1
 fi
 
@@ -67,8 +67,8 @@ for _ in {1..20}; do
 done
 
 if [ "${REAL_VAL:-}" = "$NEW" ]; then
-    notify -u normal -i "$ICON" "电池充电阈值" "$MSG"
+    notify -u normal -i "$ICON" "Battery limit" "$MSG"
 else
-    notify -u critical "电池充电阈值" "ASUS 已接受请求，但读回值为 ${REAL_VAL:-未知}%"
+    notify -u critical "Battery limit" "ASUS accepted the request, but read-back is ${REAL_VAL:-unknown}%"
     exit 1
 fi

@@ -51,7 +51,7 @@ acquire_lock() {
 
     exec 9>"$LOCK_FILE"
     if ! flock -n 9; then
-        notify "风扇模式" "上一次风扇切换还在执行，稍等一下再点。" "dialog-warning"
+        notify "Fan mode" "A previous fan change is still running; try again shortly." "dialog-warning"
         log "Fan mode change refused because another change is running"
         exit 1
     fi
@@ -59,7 +59,7 @@ acquire_lock() {
 
 require_asusctl() {
     if ! command -v asusctl >/dev/null 2>&1; then
-        notify "风扇模式" "未找到 asusctl，无法调整风扇" "dialog-error"
+        notify "Fan mode" "asusctl not found; cannot adjust fans" "dialog-error"
         log "ERROR: asusctl not found"
         exit 1
     fi
@@ -228,7 +228,7 @@ set_quiet() {
     acquire_lock
     profile="$(active_profile)"
     if [ "$profile" != "Quiet" ]; then
-        notify "风扇模式" "安静风扇只允许在 ASUS Quiet 电源模式下使用。\n当前: ${profile:-unknown}" "dialog-warning"
+        notify "Fan mode" "安静风扇只允许在 ASUS Quiet 电源模式下使用。\n当前: ${profile:-unknown}" "dialog-warning"
         log "Quiet fan mode refused outside ASUS Quiet profile: ${profile:-unknown}"
         exit 2
     fi
@@ -243,7 +243,7 @@ set_quiet() {
 
     write_mode quiet
     reload_waybar_module
-    notify "风扇模式" "已切到安静风扇。\n仅适合 Quiet 低功耗档。" "fan"
+    notify "Fan mode" "已切到安静风扇。\n仅适合 Quiet 低功耗档。" "fan"
     log "Fan mode set to quiet"
 }
 
@@ -264,7 +264,7 @@ set_normal() {
 
     write_mode normal
     reload_waybar_module
-    notify "风扇模式" "已恢复三档正常曲线。\nQuiet / Balanced / Performance" "fan"
+    notify "Fan mode" "已恢复三档正常曲线。\nQuiet / Balanced / Performance" "fan"
     log "Fan mode set to normal for all ASUS profiles"
 }
 
@@ -276,7 +276,7 @@ set_violent() {
     case "$active" in
         Quiet|Balanced|Performance) ;;
         *)
-            notify "风扇模式" "无法识别 ASUS 档位，拒绝设置满速。\n当前: ${active:-unknown}" "dialog-error"
+            notify "Fan mode" "无法识别 ASUS 档位，拒绝设置满速。\n当前: ${active:-unknown}" "dialog-error"
             log "Violent fan mode refused for unknown profile: ${active:-unknown}"
             exit 1
             ;;
@@ -290,7 +290,7 @@ set_violent() {
 
     write_mode violent
     reload_waybar_module
-    notify "风扇模式" "已切到三档暴力满速。\n后续切电源模式也保持满速。" "fan"
+    notify "Fan mode" "已切到三档暴力满速。\n后续切电源模式也保持满速。" "fan"
     log "Fan mode set to violent for all ASUS profiles; active profile was: ${active:-unknown}"
 }
 
@@ -300,7 +300,7 @@ set_mode() {
         normal) set_normal ;;
         violent) set_violent ;;
         *)
-            notify "风扇模式" "未知风扇模式: ${1:-empty}" "dialog-error"
+            notify "Fan mode" "未知风扇模式: ${1:-empty}" "dialog-error"
             exit 2
             ;;
     esac

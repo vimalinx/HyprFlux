@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# HyprFlux one-line installer — https://arch.vimalinx.com/install
-# Missing tools (git, etc.) are installed automatically via sudo.
+# HyprFlux one-line FULL desktop installer — https://arch.vimalinx.com/install
+# Bare Arch -> packages + JaKooLit base dots + HyprFlux modules.
 set -euo pipefail
+
+export LANG="${LANG:-C.UTF-8}"
+export LC_ALL="${LC_ALL:-$LANG}"
 
 HF_REPO_URL="${HF_REPO_URL:-https://github.com/vimalinx/HyprFlux.git}"
 HF_REF="${HF_REF:-main}"
@@ -17,7 +20,6 @@ AMBER=$'\033[38;2;232;176;84m'
 ROSE=$'\033[38;2;232;116;132m'
 TEXT=$'\033[38;2;220;224;232m'
 
-# curl|bash often has no TTY on stdin; prefer /dev/tty for prompts.
 TTY_IN="/dev/tty"
 if [[ ! -r "$TTY_IN" ]]; then
   TTY_IN="/dev/stdin"
@@ -31,7 +33,7 @@ banner() {
   cat <<BANNER
 ${CYAN}${BOLD}
   ┌──────────────────────────────────────────────┐
-  │   HyprFlux · 一键安装                        │
+  │   HyprFlux · full desktop installer          │
   │   ${TEXT}arch.vimalinx.com${CYAN}                          │
   └──────────────────────────────────────────────┘
 ${RESET}
@@ -46,94 +48,65 @@ err() { printf '  %s✗%s %s\n' "$ROSE" "$RESET" "$1" >&2; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
 detect_pkg() {
-  if have pacman; then
-    printf 'pacman\n'
-  elif have apt-get; then
-    printf 'apt\n'
-  elif have dnf; then
-    printf 'dnf\n'
-  elif have zypper; then
-    printf 'zypper\n'
-  else
-    printf 'unknown\n'
+  if have pacman; then printf 'pacman\n'
+  elif have apt-get; then printf 'apt\n'
+  elif have dnf; then printf 'dnf\n'
+  else printf 'unknown\n'
   fi
 }
 
 ensure_sudo() {
-  if [[ "$(id -u)" -eq 0 ]]; then
-    return 0
-  fi
+  [[ "$(id -u)" -eq 0 ]] && return 0
   if ! have sudo; then
-    err "需要 sudo 才能自动安装缺失软件包，但系统里没有 sudo"
+    err "sudo is required to install missing packages"
     exit 1
   fi
-  info "接下来可能需要输入管理员（sudo）密码"
-  # Refresh credentials using the real terminal, not the curl pipe.
-  if ! sudo -v <"$TTY_IN"; then
-    err "sudo 认证失败"
-    exit 1
-  fi
+  info "Administrator (sudo) password may be required"
+  sudo -v <"$TTY_IN" || { err "sudo authentication failed"; exit 1; }
 }
 
 pkg_install() {
-  local pkgs=("$@")
-  local mgr
+  local pkgs=("$@") mgr
   mgr="$(detect_pkg)"
   ensure_sudo
-  info "安装缺失依赖: ${pkgs[*]} （包管理器: $mgr）"
+  info "Installing: ${pkgs[*]} via $mgr"
   case "$mgr" in
-    pacman)
-      sudo pacman -Sy --needed --noconfirm "${pkgs[@]}" <"$TTY_IN"
-      ;;
+    pacman) sudo pacman -Sy --needed --noconfirm "${pkgs[@]}" <"$TTY_IN" ;;
     apt)
       sudo apt-get update <"$TTY_IN"
       sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${pkgs[@]}" <"$TTY_IN"
       ;;
-    dnf)
-      sudo dnf install -y "${pkgs[@]}" <"$TTY_IN"
-      ;;
-    zypper)
-      sudo zypper --non-interactive install "${pkgs[@]}" <"$TTY_IN"
-      ;;
-    *)
-      err "无法识别包管理器，请手动安装: ${pkgs[*]}"
-      exit 1
-      ;;
+    dnf) sudo dnf install -y "${pkgs[@]}" <"$TTY_IN" ;;
+    *) err "Unsupported package manager; install manually: ${pkgs[*]}"; exit 1 ;;
   esac
 }
 
 ensure_cmd() {
-  local cmd="$1"
-  local pkg="${2:-$1}"
+  local cmd="$1" pkg="${2:-$1}"
   if have "$cmd"; then
-    ok "$cmd 已就绪"
+    ok "$cmd ready"
     return 0
   fi
-  warn "缺少 $cmd — 准备自动安装 $pkg"
+  warn "Missing $cmd — installing $pkg"
   pkg_install "$pkg"
-  if ! have "$cmd"; then
-    err "安装后仍找不到命令: $cmd"
-    exit 1
-  fi
-  ok "$cmd 安装完成"
+  have "$cmd" || { err "Still missing after install: $cmd"; exit 1; }
+  ok "$cmd installed"
 }
 
 banner
-info "检测依赖…"
-
-# bash is required to run this script already; still ensure core tools.
+info "This installs a FULL Arch Hyprland desktop (packages + JaKooLit dots + HyprFlux)."
+info "Checking bootstrap dependencies…"
 ensure_cmd git git
-# curl is usually present (you fetched this script with it), but keep it healthy.
 if ! have curl && ! have wget; then
   ensure_cmd curl curl
 fi
+ok "Dependencies ready"
 
-ok "依赖就绪"
-info "仓库: $HF_REPO_URL ($HF_REF)"
-info "目录: $HF_DIR"
+info "repo: $HF_REPO_URL ($HF_REF)"
+info "target: $HF_DIR"
 
 if [[ -d "$HF_DIR/.git" ]]; then
-  info "发现已有仓库 — 正在更新到 $HF_REF"
+  info "Existing checkout found — updating $HF_REF"
   git -C "$HF_DIR" fetch --depth 1 origin "$HF_REF"
   git -C "$HF_DIR" checkout "$HF_REF"
   git -C "$HF_DIR" pull --ff-only origin "$HF_REF" || true
@@ -141,22 +114,19 @@ else
   mkdir -p "$(dirname "$HF_DIR")"
   git clone --depth 1 --branch "$HF_REF" "$HF_REPO_URL" "$HF_DIR"
 fi
-ok "源码已就绪"
+ok "Source ready"
 
 args=()
 case "$HF_PROFILE" in
   auto|"") ;;
   asus|generic) args+=(--profile "$HF_PROFILE") ;;
-  *)
-    err "HF_PROFILE 只能是 auto|asus|generic"
-    exit 2
-    ;;
+  *) err "HF_PROFILE must be auto|asus|generic"; exit 2 ;;
 esac
 [[ "$HF_YES" == "1" ]] && args+=(-y)
 [[ "$HF_OPTIONAL" == "1" ]] && args+=(--with-optional)
 
-info "开始执行 ./install.sh ${args[*]:-}"
+info "Starting full bootstrap…"
 cd "$HF_DIR"
-chmod +x ./install.sh
-./install.sh "${args[@]}"
-ok "完成 — 请按模块 README 合并快捷键/Waybar，并在启动配置里 source HyprFluxStartup.conf"
+chmod +x ./bootstrap/full.sh
+./bootstrap/full.sh "${args[@]}"
+ok "Full desktop bootstrap finished — reboot and log into Hyprland"

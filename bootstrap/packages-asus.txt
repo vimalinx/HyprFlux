@@ -1,0 +1,7 @@
+# ASUS ROG extras (installed only on ASUS profile).
+asusctl
+supergfxctl
+rog-control-center
+power-profiles-daemon
+tlp
+tlp-rdw

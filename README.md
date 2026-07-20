@@ -2,27 +2,32 @@
 
 <div align="center">
 
-**Curated desktop flux for Arch Linux + Hyprland**
+**Full Arch Linux + Hyprland desktop bootstrap**
 
-[Install](#install) · [Profiles](#profiles) · [Modules](#modules) · [Safety](docs/safety.md)
+[Install](#install) · [What you get](#what-you-get) · [Profiles](#profiles) · [Safety](docs/safety.md)
 
 </div>
 
 ---
 
-HyprFlux packages the reusable pieces of a real Arch + Hyprland workstation as small, auditable modules. It does **not** dump private dotfiles.
+HyprFlux turns a **minimal Arch install** into a usable Hyprland desktop:
+
+1. Installs the package stack (pacman + AUR)
+2. Installs [JaKooLit Hyprland-Dots](https://github.com/JaKooLit/Hyprland-Dots) as the public base rice
+3. Overlays HyprFlux modules (ASUS or generic power, mic, Quickshell helpers, etc.)
+4. Wires session startup and enables SDDM / PipeWire where possible
+
+It is **not** a dump of one private home directory. It is a reproducible public stack that aims to feel like a finished workstation after reboot.
 
 ## Install
 
-One-liner (landing page: [arch.vimalinx.com](https://arch.vimalinx.com)):
+Landing page: [arch.vimalinx.com](https://arch.vimalinx.com)
 
 ```bash
 bash <(curl -fsSL https://arch.vimalinx.com/install)
 ```
 
-缺 `git` 等依赖时会自动 `sudo` 安装并提示管理员密码。确认提示从真实终端读取，避免 `curl | bash` 管道误触退出。
-
-兼容写法：
+Compatible pipe form:
 
 ```bash
 curl -fsSL https://arch.vimalinx.com/install | bash
@@ -31,61 +36,41 @@ curl -fsSL https://arch.vimalinx.com/install | bash
 Non-interactive / force generic power stack:
 
 ```bash
-HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash
-HF_PROFILE=generic HF_YES=1 curl -fsSL https://arch.vimalinx.com/install | bash
+HF_YES=1 bash <(curl -fsSL https://arch.vimalinx.com/install)
+HF_PROFILE=generic HF_YES=1 bash <(curl -fsSL https://arch.vimalinx.com/install)
 ```
 
-Or clone and run locally:
+Or clone locally:
 
 ```bash
 git clone https://github.com/vimalinx/HyprFlux.git
 cd HyprFlux
+./bootstrap/full.sh
+```
+
+Module-only overlay (existing Hyprland desktop):
+
+```bash
 ./install.sh
 ```
 
-Useful flags:
+## What you get
 
-```bash
-./install.sh --dry-run          # show the plan only
-./install.sh --profile generic  # force non-ASUS power stack
-./install.sh --profile asus     # force ASUS stack
-./install.sh --with-optional    # include optional modules
-./install.sh -y                 # non-interactive
-```
+After a successful full bootstrap on bare Arch:
 
-The installer:
+- Hyprland + Waybar + SDDM + PipeWire desktop base (via packages + JaKooLit dots)
+- HyprFlux profile modules applied on top
+- `HyprFluxStartup.conf` sourced from `Startup_Apps.conf`
+- ASUS machines get asusctl/TLP helpers; others get the generic power stack
 
-1. Detects ASUS vs non-ASUS hardware.
-2. Applies `profiles/common.modules` plus either `asus` or `generic`.
-3. Installs a session-start script with a clean startup banner (interactive) / quiet Hyprland `exec-once` path.
-4. Backs up colliding files as `*.hyprflux-bak.<timestamp>` before overwrite.
-
-After install, source the startup snippet from your Hyprland startup file:
-
-```conf
-source = $UserConfigs/HyprFluxStartup.conf
-```
+Then: **reboot → log in through SDDM → Hyprland**.
 
 ## Profiles
 
 | Profile | When | Power stack |
 |---|---|---|
-| `asus` | ASUSTeK / ROG / TUF / Zephyrus, or live `asusd` | `asus-tlp-power-stack`, `asus-fan-mode`, ASUS Waybar power widgets |
-| `generic` | everything else | `generic-power-stack` (`powerprofilesctl` or `tlpctl`) |
-
-Non-ASUS machines never auto-start the ASUS helpers, even if those scripts happen to exist on disk.
-
-## Modules
-
-See [docs/module-index.md](docs/module-index.md) for the full list. Highlights added in this refresh:
-
-- Dual-monitor workspace banks
-- Wayland compositor OOM protection
-- Terminal combos + session button
-- VibeMouse Waybar status
-- RNNoise / Clear Voice mic stacks
-- Generic power stack for non-ASUS laptops
-- Action Desk-aware Quickshell on-demand launcher
+| `asus` | ASUSTeK / ROG / TUF / Zephyrus, or live `asusd` | `asus-tlp-power-stack`, `asus-fan-mode` |
+| `generic` | everything else | `generic-power-stack` |
 
 ## Checks
 
@@ -95,7 +80,6 @@ See [docs/module-index.md](docs/module-index.md) for the full list. Highlights a
 
 ## Design
 
-- Module-first under `modules/<name>/`
-- Read-only by default unless you run `./install.sh`
-- Public-safe: no shell rc dumps, no API keys, no private agent services
-- Snippets for keybinds / Waybar still need a manual merge where noted in each module README
+- Full bootstrap for bare Arch; module overlay for existing desktops
+- Public-safe: no private shell rc dumps, API keys, or agent secrets
+- Confirmation prompts read from `/dev/tty` so `curl | bash` does not auto-abort
