@@ -18,10 +18,43 @@ HF_TEXT=$'\033[38;2;220;224;232m'
 HF_MUTED=$'\033[38;2;140;150;168m'
 
 # curl|bash leaves stdin as the script pipe; interactive I/O must use a real TTY.
-HF_TTY="/dev/tty"
-if [[ ! -r "$HF_TTY" || ! -w "$HF_TTY" ]]; then
-  HF_TTY=""
+# -r/-w on /dev/tty can succeed even when open fails (ENXIO) with no controlling TTY —
+# always probe with a real open, not test(1) mode bits.
+HF_TTY=""
+if [[ -n "${HF_TTY_OVERRIDE:-}" ]]; then
+  HF_TTY="$HF_TTY_OVERRIDE"
+elif { true </dev/tty; } 2>/dev/null && { true >/dev/tty; } 2>/dev/null; then
+  HF_TTY="/dev/tty"
 fi
+
+# Path suitable for `cmd <"$HF_SUDO_IN"`; /dev/null when detached + sudo already cached.
+hf_sudo_in() {
+  if [[ -n "${HF_TTY:-}" ]] && { true <"$HF_TTY"; } 2>/dev/null; then
+    printf '%s' "$HF_TTY"
+  elif [[ -t 0 ]]; then
+    printf '%s' "/dev/stdin"
+  else
+    printf '%s' "/dev/null"
+  fi
+}
+
+# Refresh sudo timestamp when possible; succeed if already cached (nohup/tmux-safe).
+hf_ensure_sudo() {
+  if [[ "$(id -u)" -eq 0 ]]; then
+    return 0
+  fi
+  if sudo -n true 2>/dev/null; then
+    return 0
+  fi
+  local sin
+  sin="$(hf_sudo_in)"
+  if [[ "$sin" == "/dev/null" ]]; then
+    hf_err "sudo needs a password but no controlling TTY is available"
+    hf_err "Authenticate first (sudo -v), or run under SSH -tt / a real terminal."
+    return 1
+  fi
+  sudo -v <"$sin"
+}
 
 hf_supports_color() {
   [[ -t 1 ]] && [[ "${NO_COLOR:-}" == "" ]] && [[ "${TERM:-}" != "dumb" ]]

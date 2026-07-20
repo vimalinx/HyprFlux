@@ -10,8 +10,7 @@ source "$repo_root/scripts/ui.sh"
 # shellcheck source=/dev/null
 source "$repo_root/scripts/net-china.sh"
 
-TTY_IN="${HF_TTY:-/dev/tty}"
-[[ -r "$TTY_IN" ]] || TTY_IN="/dev/stdin"
+TTY_IN="$(hf_sudo_in)"
 
 if command -v yay >/dev/null 2>&1 || command -v paru >/dev/null 2>&1; then
   hf_ok "AUR helper already present ($(command -v yay || command -v paru))"

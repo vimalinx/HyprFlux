@@ -23,10 +23,23 @@ AMBER=$'\033[38;2;232;176;84m'
 ROSE=$'\033[38;2;232;116;132m'
 TEXT=$'\033[38;2;220;224;232m'
 
-TTY_IN="/dev/tty"
-if [[ ! -r "$TTY_IN" ]]; then
-  TTY_IN="/dev/stdin"
+# curl|bash leaves stdin as the script pipe; interactive I/O must use a real TTY.
+# -r/-w on /dev/tty can succeed even when open fails (ENXIO) with no controlling TTY —
+# always probe with a real open, not test(1) mode bits.
+HF_TTY=""
+if { true </dev/tty; } 2>/dev/null && { true >/dev/tty; } 2>/dev/null; then
+  HF_TTY="/dev/tty"
 fi
+
+hf_sudo_in() {
+  if [[ -n "${HF_TTY:-}" ]] && { true <"$HF_TTY"; } 2>/dev/null; then
+    printf '%s' "$HF_TTY"
+  elif [[ -t 0 ]]; then
+    printf '%s' "/dev/stdin"
+  else
+    printf '%s' "/dev/null"
+  fi
+}
 
 if [[ ! -t 1 || -n "${NO_COLOR:-}" ]]; then
   BOLD=""; RESET=""; CYAN=""; GREEN=""; AMBER=""; ROSE=""; TEXT=""
@@ -239,22 +252,33 @@ ensure_sudo() {
     err "sudo is required to install missing packages"
     exit 1
   fi
+  if sudo -n true 2>/dev/null; then
+    return 0
+  fi
+  local sin
+  sin="$(hf_sudo_in)"
+  if [[ "$sin" == "/dev/null" ]]; then
+    err "sudo needs a password but no controlling TTY is available"
+    err "Authenticate first (sudo -v), or run under SSH -tt / a real terminal."
+    exit 1
+  fi
   info "Administrator (sudo) password may be required"
-  sudo -v <"$TTY_IN" || { err "sudo authentication failed"; exit 1; }
+  sudo -v <"$sin" || { err "sudo authentication failed"; exit 1; }
 }
 
 pkg_install() {
-  local pkgs=("$@") mgr
+  local pkgs=("$@") mgr sin
   mgr="$(detect_pkg)"
   ensure_sudo
+  sin="$(hf_sudo_in)"
   info "Installing: ${pkgs[*]} via $mgr"
   case "$mgr" in
-    pacman) sudo pacman -Sy --needed --noconfirm "${pkgs[@]}" <"$TTY_IN" ;;
+    pacman) sudo pacman -Sy --needed --noconfirm "${pkgs[@]}" <"$sin" ;;
     apt)
-      sudo apt-get update <"$TTY_IN"
-      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${pkgs[@]}" <"$TTY_IN"
+      sudo apt-get update <"$sin"
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "${pkgs[@]}" <"$sin"
       ;;
-    dnf) sudo dnf install -y "${pkgs[@]}" <"$TTY_IN" ;;
+    dnf) sudo dnf install -y "${pkgs[@]}" <"$sin" ;;
     *) err "Unsupported package manager; install manually: ${pkgs[*]}"; exit 1 ;;
   esac
 }

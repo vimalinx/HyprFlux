@@ -88,15 +88,17 @@ if [[ "$ASSUME_YES" != "1" ]]; then
   esac
 fi
 
-TTY_IN="${HF_TTY:-/dev/tty}"
-[[ -r "$TTY_IN" ]] || TTY_IN="/dev/stdin"
-export HF_TTY="$TTY_IN"
+TTY_IN="$(hf_sudo_in)"
+# Only export a real TTY path; empty/null keeps child scripts on hf_sudo_in().
+if [[ -n "${HF_TTY:-}" ]]; then
+  export HF_TTY
+elif [[ "$TTY_IN" != "/dev/null" ]]; then
+  export HF_TTY="$TTY_IN"
+fi
 
 hf_section "Sudo"
 hf_info "Administrator password may be required for package and service changes"
-if [[ "$(id -u)" -ne 0 ]]; then
-  sudo -v <"$TTY_IN"
-fi
+hf_ensure_sudo
 
 chmod +x \
   "$repo_root/bootstrap/"*.sh \
