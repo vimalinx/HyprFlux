@@ -128,12 +128,60 @@ git_clone_github() {
     [[ "$skip" -eq 1 ]] && continue
     tried+=("$m")
     warn "Retry clone via $m"
+    rm -f "$dest/.git/"*.lock 2>/dev/null || true
     rm -rf "$dest"
     if git clone "$@" "$m" "$dest"; then
       return 0
     fi
   done
   return 1
+}
+
+git_clone_fail_hint() {
+  local msg="$1"
+  if [[ "$msg" == *[Uu]nable\ to\ create* ]] || [[ "$msg" == *temporary\ file* ]]; then
+    err "Disk or temp dir may be full — check free space:"
+    df -h "${HF_DIR}" "$(dirname "$HF_DIR")" /tmp 2>/dev/null || df -h
+  fi
+}
+
+HF_VENDOR_TAR="${HF_VENDOR_TAR:-https://arch.vimalinx.com/vendor/HyprFlux-main.tar.gz}"
+
+sync_source_tarball() {
+  local url="$HF_VENDOR_TAR" tmp
+  info "Trying vendor tarball: $url"
+  if ! have curl; then
+    warn "curl required for vendor tarball"
+    return 1
+  fi
+  if ! have tar; then
+    warn "tar required to extract vendor tarball"
+    return 1
+  fi
+  tmp="$(mktemp -d)"
+  if ! curl -fsSL --connect-timeout 8 --max-time 120 \
+       --speed-limit 1024 --speed-time 20 --retry 2 \
+       -o "$tmp/HyprFlux-main.tar.gz" "$url"; then
+    rm -rf "$tmp"
+    warn "Vendor tarball download failed"
+    return 1
+  fi
+  mkdir -p "$(dirname "$HF_DIR")"
+  rm -rf "$HF_DIR"
+  mkdir -p "$HF_DIR"
+  if ! tar -xzf "$tmp/HyprFlux-main.tar.gz" -C "$HF_DIR"; then
+    rm -rf "$tmp" "$HF_DIR"
+    warn "Vendor tarball extract failed"
+    return 1
+  fi
+  rm -rf "$tmp"
+  if [[ ! -f "$HF_DIR/bootstrap/full.sh" ]]; then
+    rm -rf "$HF_DIR"
+    warn "Vendor tarball missing bootstrap/full.sh"
+    return 1
+  fi
+  ok "Source synced from vendor tarball"
+  return 0
 }
 
 detect_pkg() {
@@ -183,7 +231,20 @@ ensure_cmd() {
 }
 
 sync_source() {
-  local fetch_url
+  local fetch_url clone_log prefer_tarball=0
+
+  if [[ "$HF_CN" == "1" ]] || ! curl_ok "https://github.com/"; then
+    prefer_tarball=1
+  fi
+
+  if [[ "$prefer_tarball" -eq 1 ]]; then
+    if sync_source_tarball; then
+      chmod +x "$HF_DIR/bootstrap/full.sh"
+      return 0
+    fi
+    warn "Vendor tarball unavailable — falling back to git clone"
+  fi
+
   fetch_url="$(resolve_repo_url "$HF_REPO_URL")"
   if [[ "$fetch_url" != "$HF_REPO_URL" && "$fetch_url" != "${HF_REPO_URL%.git}.git" ]]; then
     warn "GitHub looks blocked/slow — using mirror: $fetch_url"
@@ -191,21 +252,29 @@ sync_source() {
 
   if [[ -d "$HF_DIR/.git" ]]; then
     info "Existing checkout found — resetting to $HF_REF"
+    rm -f "$HF_DIR/.git/"*.lock 2>/dev/null || true
     git -C "$HF_DIR" remote set-url origin "$fetch_url" >/dev/null 2>&1 || true
     if ! git -C "$HF_DIR" fetch --depth 1 origin "$HF_REF"; then
       warn "Fetch failed — recloning cleanly"
+      rm -f "$HF_DIR/.git/"*.lock 2>/dev/null || true
       rm -rf "$HF_DIR"
     fi
   fi
 
   if [[ ! -d "$HF_DIR/.git" ]]; then
     mkdir -p "$(dirname "$HF_DIR")"
+    rm -f "$HF_DIR/.git/"*.lock 2>/dev/null || true
     rm -rf "$HF_DIR"
-    if ! git_clone_github "$HF_REPO_URL" "$HF_DIR" --depth 1 --branch "$HF_REF"; then
+    clone_log="$(mktemp)"
+    if ! git_clone_github "$HF_REPO_URL" "$HF_DIR" --depth 1 --branch "$HF_REF" 2>"$clone_log"; then
+      [[ -s "$clone_log" ]] && cat "$clone_log" >&2
+      git_clone_fail_hint "$(<"$clone_log")"
+      rm -f "$clone_log"
       err "Failed to clone HyprFlux (tried GitHub + China mirrors)"
       err "Set HF_GITHUB_MIRROR explicitly, e.g. HF_CN=1 or HF_GITHUB_MIRROR=https://ghfast.top/https://github.com/"
       exit 1
     fi
+    rm -f "$clone_log"
     # Keep origin pointed at a working remote for later updates.
     git -C "$HF_DIR" remote set-url origin "$(resolve_repo_url "$HF_REPO_URL")" || true
   else
@@ -234,15 +303,19 @@ fi
 ok "Dependencies ready"
 
 if [[ "$HF_CN" == "1" ]]; then
-  info "HF_CN=1 — preferring China GitHub mirrors"
+  info "HF_CN=1 — preferring vendor tarball, then China GitHub mirrors"
 elif ! curl_ok "https://github.com/"; then
-  warn "github.com unreachable — will use China GitHub mirrors automatically"
+  warn "github.com unreachable — will try vendor tarball, then China GitHub mirrors"
 fi
 
 info "repo: $HF_REPO_URL ($HF_REF)"
 info "target: $HF_DIR"
 sync_source
-ok "Source ready ($(git -C "$HF_DIR" rev-parse --short HEAD))"
+if [[ -d "$HF_DIR/.git" ]]; then
+  ok "Source ready ($(git -C "$HF_DIR" rev-parse --short HEAD))"
+else
+  ok "Source ready (vendor tarball)"
+fi
 
 # Export mirror prefs for nested bootstrap scripts.
 export HF_CN HF_GITHUB_MIRROR
@@ -263,4 +336,4 @@ chmod +x ./bootstrap/*.sh ./install.sh ./scripts/*.sh ./session/*.sh 2>/dev/null
 ./bootstrap/full.sh "${args[@]}"
 ok "Full desktop bootstrap finished — reboot and log into Hyprland"
 
-# china-mirror 2026-07-20T20:27:04+08:00
+# vendor-tarball 2026-07-20T23:10:00+08:00
