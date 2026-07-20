@@ -93,6 +93,36 @@ ensure_cmd() {
   ok "$cmd installed"
 }
 
+sync_source() {
+  # Treat HF_DIR as an installer cache: always match origin/HF_REF exactly.
+  # Diverged local commits from older runs must not block bootstrap.
+  if [[ -d "$HF_DIR/.git" ]]; then
+    info "Existing checkout found — resetting to origin/$HF_REF"
+    git -C "$HF_DIR" remote set-url origin "$HF_REPO_URL" >/dev/null 2>&1 || true
+    if ! git -C "$HF_DIR" fetch --depth 1 origin "$HF_REF"; then
+      warn "Fetch failed — recloning cleanly"
+      rm -rf "$HF_DIR"
+    fi
+  fi
+
+  if [[ ! -d "$HF_DIR/.git" ]]; then
+    mkdir -p "$(dirname "$HF_DIR")"
+    rm -rf "$HF_DIR"
+    git clone --depth 1 --branch "$HF_REF" "$HF_REPO_URL" "$HF_DIR"
+  else
+    git -C "$HF_DIR" checkout -B "$HF_REF" "origin/$HF_REF"
+    git -C "$HF_DIR" reset --hard "origin/$HF_REF"
+    git -C "$HF_DIR" clean -fd
+  fi
+
+  if [[ ! -x "$HF_DIR/bootstrap/full.sh" && ! -f "$HF_DIR/bootstrap/full.sh" ]]; then
+    err "bootstrap/full.sh missing after sync — refusing to continue"
+    err "Delete $HF_DIR and rerun, or check $HF_REPO_URL ($HF_REF)"
+    exit 1
+  fi
+  chmod +x "$HF_DIR/bootstrap/full.sh"
+}
+
 banner
 info "This installs a FULL Arch Hyprland desktop (packages + JaKooLit dots + HyprFlux)."
 info "Checking bootstrap dependencies…"
@@ -104,17 +134,8 @@ ok "Dependencies ready"
 
 info "repo: $HF_REPO_URL ($HF_REF)"
 info "target: $HF_DIR"
-
-if [[ -d "$HF_DIR/.git" ]]; then
-  info "Existing checkout found — updating $HF_REF"
-  git -C "$HF_DIR" fetch --depth 1 origin "$HF_REF"
-  git -C "$HF_DIR" checkout "$HF_REF"
-  git -C "$HF_DIR" pull --ff-only origin "$HF_REF" || true
-else
-  mkdir -p "$(dirname "$HF_DIR")"
-  git clone --depth 1 --branch "$HF_REF" "$HF_REPO_URL" "$HF_DIR"
-fi
-ok "Source ready"
+sync_source
+ok "Source ready ($(git -C "$HF_DIR" rev-parse --short HEAD))"
 
 args=()
 case "$HF_PROFILE" in
@@ -127,6 +148,8 @@ esac
 
 info "Starting full bootstrap…"
 cd "$HF_DIR"
-chmod +x ./bootstrap/full.sh
+chmod +x ./bootstrap/*.sh ./install.sh ./scripts/*.sh ./session/*.sh 2>/dev/null || true
 ./bootstrap/full.sh "${args[@]}"
 ok "Full desktop bootstrap finished — reboot and log into Hyprland"
+
+# sync-fix 2026-07-20T20:20:44+08:00
