@@ -18,13 +18,32 @@ if command -v yay >/dev/null 2>&1 || command -v paru >/dev/null 2>&1; then
   exit 0
 fi
 
-hf_info "Installing yay-bin (AUR helper bootstrap)"
+hf_info "Installing yay (AUR helper bootstrap)"
 if ! pacman -Qq base-devel >/dev/null 2>&1; then
   sudo pacman -S --needed --noconfirm base-devel git <"$TTY_IN"
 fi
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
+
+rewrite_pkgbuild_github_mirrors() {
+  local pkgbuild="$1"
+  local mirror prefix
+  [[ -f "$pkgbuild" ]] || return 0
+  mirror="$(hf_pick_github_mirror)"
+  [[ -n "$mirror" ]] || return 0
+  # PKGBUILD source URLs are plain https://github.com/... ; rewrite to mirror prefix.
+  if [[ "$mirror" == *"/https://github.com/" ]]; then
+    prefix="$mirror"
+  else
+    prefix="$(hf_mirror_github_url "https://github.com/x/y" "$mirror")"
+    prefix="${prefix%x/y.git}"
+  fi
+  if grep -q 'https://github.com/' "$pkgbuild"; then
+    hf_info "Rewriting PKGBUILD GitHub URLs via mirror for China-friendly download"
+    sed -i "s#https://github.com/#${prefix}#g" "$pkgbuild"
+  fi
+}
 
 clone_yay_bin() {
   local dest="$1"
@@ -41,6 +60,7 @@ clone_yay_bin() {
     rm -rf "$dest"
     if git clone --depth 1 "$url" "$dest"; then
       if [[ -f "$dest/PKGBUILD" ]]; then
+        rewrite_pkgbuild_github_mirrors "$dest/PKGBUILD"
         return 0
       fi
       hf_warn "Clone succeeded but PKGBUILD missing: $url"
@@ -52,8 +72,8 @@ clone_yay_bin() {
 }
 
 install_yay_from_github_release() {
-  # Last-resort binary bootstrap when AUR git is unreachable (common on some CN networks).
-  local ver arch asset url tdir
+  # Prefer this path when GitHub is slow: we control mirror downloads ourselves.
+  local ver arch asset_arch asset url tdir
   arch="$(uname -m)"
   case "$arch" in
     x86_64) asset_arch="x86_64" ;;
@@ -64,15 +84,15 @@ install_yay_from_github_release() {
       ;;
   esac
 
-  # Pin via GitHub latest redirect through mirrors when needed.
   ver="$(
-    curl -fsSL https://api.github.com/repos/Jguer/yay/releases/latest \
+    curl -fsSL --connect-timeout 5 --max-time 20 \
+      https://api.github.com/repos/Jguer/yay/releases/latest 2>/dev/null \
       | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' \
       | head -n1
   )"
   if [[ -z "$ver" ]]; then
-    # Mirror-friendly fallback: known recent tag; updated when bootstrap next fails.
-    ver="v12.5.7"
+    # Keep in sync when bootstrap fails on an old pin.
+    ver="v13.0.1"
     hf_warn "Could not resolve latest yay tag; falling back to $ver"
   fi
   ver="${ver#v}"
@@ -81,14 +101,14 @@ install_yay_from_github_release() {
   tdir="$work/yay-release"
   mkdir -p "$tdir"
   for url in \
-    "https://github.com/Jguer/yay/releases/download/v${ver}/${asset}" \
     "https://ghfast.top/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}" \
-    "https://gh-proxy.com/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}"
+    "https://gh-proxy.com/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}" \
+    "https://mirror.ghproxy.com/https://github.com/Jguer/yay/releases/download/v${ver}/${asset}" \
+    "https://github.com/Jguer/yay/releases/download/v${ver}/${asset}"
   do
     hf_info "Trying yay release: $url"
-    if curl -fsSL "$url" -o "$tdir/$asset"; then
+    if curl -fL --connect-timeout 8 --max-time 180 --retry 2 "$url" -o "$tdir/$asset"; then
       tar -xzf "$tdir/$asset" -C "$tdir"
-      # tarball usually contains yay_${ver}_${arch}/yay
       local bin
       bin="$(find "$tdir" -type f -name yay -perm -111 | head -n1)"
       if [[ -n "$bin" ]]; then
@@ -103,16 +123,37 @@ install_yay_from_github_release() {
   return 1
 }
 
-if clone_yay_bin "$work/yay"; then
-  (
-    cd "$work/yay"
-    makepkg -si --noconfirm
-  )
-elif install_yay_from_github_release; then
-  hf_ok "yay installed from GitHub release into /usr/local/bin"
-else
-  hf_err "Failed to bootstrap yay (AUR yay-bin + GitHub release all failed)"
-  exit 1
+# On China / blocked GitHub, prefer mirrored release binary first (avoids makepkg
+# hanging on a direct github.com curl for 10+ minutes over a flaky SSH session).
+prefer_release=0
+if [[ "${HF_CN:-0}" == "1" ]] || ! hf_github_direct_ok; then
+  prefer_release=1
+fi
+
+installed=0
+if [[ "$prefer_release" == "1" ]]; then
+  if install_yay_from_github_release; then
+    hf_ok "yay installed from GitHub release into /usr/local/bin"
+    installed=1
+  else
+    hf_warn "Release bootstrap failed — falling back to yay-bin makepkg"
+  fi
+fi
+
+if [[ "$installed" != "1" ]]; then
+  if clone_yay_bin "$work/yay"; then
+    (
+      cd "$work/yay"
+      makepkg -si --noconfirm
+    )
+    installed=1
+  elif [[ "$prefer_release" != "1" ]] && install_yay_from_github_release; then
+    hf_ok "yay installed from GitHub release into /usr/local/bin"
+    installed=1
+  else
+    hf_err "Failed to bootstrap yay (release + yay-bin all failed)"
+    exit 1
+  fi
 fi
 
 if ! command -v yay >/dev/null 2>&1; then
