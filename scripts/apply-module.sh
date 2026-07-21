@@ -26,7 +26,7 @@ fi
 expand_dest() {
   local dest="$1"
   if [[ "${dest:0:2}" == "~/" ]]; then
-    printf '%s\n' "$HOME/${dest#~/}"
+    printf '%s\n' "$HOME/${dest:2}"
   elif [[ "$dest" == "~" ]]; then
     printf '%s\n' "$HOME"
   else

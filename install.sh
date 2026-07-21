@@ -134,7 +134,7 @@ verify_module_outputs() {
       [[ -z "$line" || "$line" == \#* ]] && continue
       IFS='|' read -r src_rel dest_spec _mode <<<"$line"
       if [[ "${dest_spec:0:2}" == "~/" ]]; then
-        expanded="$HOME/${dest_spec#~/}"
+        expanded="$HOME/${dest_spec:2}"
       elif [[ "$dest_spec" == "~" ]]; then
         expanded="$HOME"
       else
