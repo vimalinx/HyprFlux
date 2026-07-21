@@ -1,0 +1,8 @@
+"custom/power_mode": {
+  "exec": "$HOME/.config/hypr/scripts/waybar-power-mode.sh",
+  "return-type": "json",
+  "interval": 30,
+  "format": "{}",
+  "on-click": "$HOME/.config/hypr/UserScripts/toggle-asus-profile.sh",
+  "tooltip": true
+}

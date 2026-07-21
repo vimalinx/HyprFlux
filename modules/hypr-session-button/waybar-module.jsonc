@@ -1,0 +1,10 @@
+"custom/desktop_session": {
+  "exec": "$HOME/.config/hypr/UserScripts/HyprSessionButton.py status",
+  "return-type": "json",
+  "interval": 10,
+  "format": "{}",
+  "tooltip": true,
+  "on-click": "$HOME/.config/hypr/UserScripts/HyprSessionButton.py toggle",
+  "on-click-right": "$HOME/.config/hypr/UserScripts/HyprSessionButton.py save",
+  "on-click-middle": "$HOME/.config/hypr/UserScripts/HyprSessionButton.py restore"
+}

@@ -83,11 +83,37 @@ write_applied_marker() {
   } >"$marker"
 }
 
+merge_waybar_snippets() {
+  local merge_py="$repo_root/scripts/merge-waybar-user-modules.py"
+  local -a snippets=()
+  local candidate
+
+  if [[ -f "$module_dir/waybar-module.jsonc" ]]; then
+    snippets+=("$module_dir/waybar-module.jsonc")
+  fi
+  while IFS= read -r -d '' candidate; do
+    snippets+=("$candidate")
+  done < <(find "$module_dir/waybar" -maxdepth 1 -name '*.jsonc' -print0 2>/dev/null || true)
+
+  ((${#snippets[@]} == 0)) && return 0
+  if [[ ! -x "$merge_py" && ! -f "$merge_py" ]]; then
+    hf_warn "$module_name: merge script missing ($merge_py)"
+    return 1
+  fi
+  if [[ "$dry_run" == "1" ]]; then
+    hf_info "would merge waybar snippets for $module_name (${#snippets[@]} file(s))"
+    return 0
+  fi
+  python3 "$merge_py" "${snippets[@]}"
+}
+
 if [[ -x "$module_dir/apply.sh" ]]; then
   if [[ "$dry_run" == "1" ]]; then
     hf_info "would run $module_name/apply.sh"
+    merge_waybar_snippets || true
   else
     "$module_dir/apply.sh"
+    merge_waybar_snippets || hf_warn "$module_name: waybar UserModules merge skipped/failed"
     write_applied_marker
   fi
   exit 0
@@ -109,7 +135,18 @@ if [[ -f "$module_dir/DEST" ]]; then
     hf_err "$module_name: $errors missing source file(s)"
     exit 1
   fi
+  merge_waybar_snippets || hf_warn "$module_name: waybar UserModules merge skipped/failed"
   if ((copied > 0)); then
+    write_applied_marker
+  fi
+  exit 0
+fi
+
+if [[ -f "$module_dir/waybar-module.jsonc" ]] || [[ -d "$module_dir/waybar" ]]; then
+  if [[ "$dry_run" == "1" ]]; then
+    merge_waybar_snippets || true
+  else
+    merge_waybar_snippets || hf_warn "$module_name: waybar UserModules merge skipped/failed"
     write_applied_marker
   fi
   exit 0

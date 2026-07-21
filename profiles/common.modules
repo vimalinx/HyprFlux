@@ -15,6 +15,7 @@ safe-mic-lowgain
 satty-screenshot
 sddm-intel-greeter
 swaync-igpu-systemd
+bar-services-startup
 systemd-memory-guard
 tmux-wallust
 wallpaper-swww-restore
@@ -23,6 +24,8 @@ waybar-cava-lowpower
 waybar-workspace-scroll
 waydroid-clipboard
 wayland-oom-protection
+waybar-symlink-fix
+hypr-windowrules-idleinhibit-fix
 caffeine-disable
 dual-monitor-workspaces
 vibemouse-waybar
