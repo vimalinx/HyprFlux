@@ -25,11 +25,13 @@ fi
 
 expand_dest() {
   local dest="$1"
-  case "$dest" in
-    ~/*) printf '%s\n' "$HOME/${dest#~/}" ;;
-    ~) printf '%s\n' "$HOME" ;;
-    *) printf '%s\n' "$dest" ;;
-  esac
+  if [[ "${dest:0:2}" == "~/" ]]; then
+    printf '%s\n' "$HOME/${dest#~/}"
+  elif [[ "$dest" == "~" ]]; then
+    printf '%s\n' "$HOME"
+  else
+    printf '%s\n' "$dest"
+  fi
 }
 
 backup_if_needed() {

@@ -133,11 +133,13 @@ verify_module_outputs() {
     while IFS= read -r line || [[ -n "$line" ]]; do
       [[ -z "$line" || "$line" == \#* ]] && continue
       IFS='|' read -r src_rel dest_spec _mode <<<"$line"
-      case "$dest_spec" in
-        ~/*) expanded="$HOME/${dest_spec#~/}" ;;
-        ~) expanded="$HOME" ;;
-        *) expanded="$dest_spec" ;;
-      esac
+      if [[ "${dest_spec:0:2}" == "~/" ]]; then
+        expanded="$HOME/${dest_spec#~/}"
+      elif [[ "$dest_spec" == "~" ]]; then
+        expanded="$HOME"
+      else
+        expanded="$dest_spec"
+      fi
       if [[ ! -e "$expanded" ]]; then
         hf_err "missing after apply: $mod -> $expanded"
         missing=$((missing + 1))
