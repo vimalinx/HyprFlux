@@ -51,10 +51,17 @@ hf_ok "wrote UserConfigs/HyprFluxTerm.conf ($term_bin)"
 
 if [[ -f "$hyprland_conf" ]]; then
   if grep -Fq "HyprFluxTerm.conf" "$hyprland_conf"; then
+    if [[ "$(grep -cF 'HyprFluxTerm.conf' "$hyprland_conf")" -gt 1 ]]; then
+      backup_once "$hyprland_conf"
+      tmp="$(mktemp)"
+      awk '!seen[$0]++ || !/HyprFluxTerm\.conf/' "$hyprland_conf" >"$tmp"
+      mv "$tmp" "$hyprland_conf"
+      hf_ok "removed duplicate HyprFluxTerm.conf source lines from hyprland.conf"
+    fi
     hf_ok "hyprland.conf already sources HyprFluxTerm.conf"
-  elif grep -qE '^[[:space:]]*source[[:space:]]*=.*Keybinds\.conf' "$hyprland_conf"; then
+  elif grep -qE '^[[:space:]]*source[[:space:]]*=.*(\$configs|configs)/Keybinds\.conf' "$hyprland_conf"; then
     backup_once "$hyprland_conf"
-    sed -i -E '/^[[:space:]]*source[[:space:]]*=.*Keybinds\.conf/i source = $HOME/.config/hypr/UserConfigs/HyprFluxTerm.conf # HyprFlux: term vars before Keybinds' \
+    sed -i -E '/^[[:space:]]*source[[:space:]]*=.*(\$configs|configs)\/Keybinds\.conf/i source = $HOME/.config/hypr/UserConfigs/HyprFluxTerm.conf # HyprFlux: term vars before Keybinds' \
       "$hyprland_conf"
     hf_ok "inserted early HyprFluxTerm.conf source before Keybinds.conf"
   else
