@@ -29,9 +29,9 @@ symlink_broken_or_foreign() {
 pick_config_layout() {
   local candidate
   for candidate in \
-    "$configs_dir/[TOP] Simple" \
     "$configs_dir/[TOP] Default Laptop" \
-    "$configs_dir/[TOP] Default"
+    "$configs_dir/[TOP] Default" \
+    "$configs_dir/[TOP] Simple"
     do
     if [[ -f "$candidate" || -d "$candidate" ]]; then
       printf '%s\n' "$candidate"
@@ -51,6 +51,7 @@ pick_config_layout() {
 pick_style_file() {
   local candidate
   for candidate in \
+    "$style_dir/[Wallust] Colored.css" \
     "$style_dir/[Colored] Translucent.css" \
     "$style_dir/[Dark] Wallust Colored.css" \
     "$style_dir/[Dark] Wallust Chroma Fusion Edge.css"

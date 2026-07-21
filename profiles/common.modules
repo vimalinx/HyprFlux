@@ -25,6 +25,7 @@ waybar-workspace-scroll
 waydroid-clipboard
 wayland-oom-protection
 waybar-symlink-fix
+hypr-term-bind-fix
 hypr-windowrules-idleinhibit-fix
 caffeine-disable
 dual-monitor-workspaces
