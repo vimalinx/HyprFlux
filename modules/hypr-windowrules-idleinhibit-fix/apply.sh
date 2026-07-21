@@ -15,7 +15,7 @@ if [[ ! -f "$rules_file" ]]; then
   exit 0
 fi
 
-if grep -q '\^\(\*\)\$' "$rules_file"; then
+if grep -Fq '^(*)$' "$rules_file"; then
   bak="${rules_file}.hyprflux-bak.$(date +%Y%m%d-%H%M%S)"
   cp -a "$rules_file" "$bak"
   sed -i '/\^(\*)\$/d' "$rules_file"

@@ -41,10 +41,11 @@ if command -v systemctl >/dev/null 2>&1; then
   systemctl --user daemon-reload || true
   for unit in swaync.service waybar.service; do
     if systemctl --user cat "$unit" >/dev/null 2>&1; then
-      if systemctl --user enable --now "$unit" >/dev/null 2>&1; then
-        hf_ok "enabled $unit"
+      if systemctl --user enable "$unit" >/dev/null 2>&1 \
+        && systemctl --user restart "$unit" >/dev/null 2>&1; then
+        hf_ok "enabled and restarted $unit"
       else
-        hf_warn "$unit enable/start failed (may already be running via exec-once on live session)"
+        hf_warn "$unit enable/restart failed (retry after next Hyprland login)"
       fi
     else
       hf_info "$unit not installed; leaving Hyprland/manual startup as fallback"
