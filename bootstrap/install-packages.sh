@@ -115,16 +115,35 @@ ensure_swww_compat_symlinks
 "$repo_root/bootstrap/ensure-aur-helper.sh"
 aur_helper="$(command -v yay || command -v paru)"
 if [[ ${#AUR[@]} -gt 0 ]]; then
-  hf_info "Installing AUR packages with $aur_helper (one-by-one for resilience)"
-  for pkg in "${AUR[@]}"; do
+  aur_cache_clear() {
+    local name="$1"
+    local cache_home="${XDG_CACHE_HOME:-$HOME/.cache}"
+    rm -rf "${cache_home}/yay/${name}" "${cache_home}/paru/clone/${name}" 2>/dev/null || true
+  }
+
+  aur_install_one() {
+    local pkg="$1"
     if pkg_installed "$pkg"; then
       hf_ok "Already installed: $pkg"
-      continue
+      return 0
     fi
     hf_info "AUR: $pkg"
-    if ! "$aur_helper" -S --needed --noconfirm "$pkg" <"$TTY_IN"; then
-      hf_warn "AUR package failed (continuing): $pkg"
+    if "$aur_helper" -S --needed --noconfirm "$pkg" <"$TTY_IN"; then
+      return 0
     fi
+    hf_warn "AUR package failed — clearing build cache and retrying once: $pkg"
+    aur_cache_clear "$pkg"
+    if "$aur_helper" -S --needed --noconfirm "$pkg" <"$TTY_IN"; then
+      hf_ok "AUR retry succeeded: $pkg"
+      return 0
+    fi
+    hf_warn "AUR package failed (continuing): $pkg"
+    return 1
+  }
+
+  hf_info "Installing AUR packages with $aur_helper (one-by-one for resilience)"
+  for pkg in "${AUR[@]}"; do
+    aur_install_one "$pkg" || true
   done
 fi
 

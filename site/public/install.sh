@@ -401,4 +401,5 @@ chmod +x ./bootstrap/*.sh ./install.sh ./scripts/*.sh ./session/*.sh 2>/dev/null
 ./bootstrap/full.sh "${args[@]}"
 ok "Full desktop bootstrap finished — reboot and log into Hyprland"
 
-# vendor-tarball-sha256 2026-07-20T23:50:00+08:00
+# Vendor tarball: regenerate with ./scripts/build-vendor-tarball.sh then deploy site/public.
+# vendor-tarball-sha256 2026-07-21T08:10:00+08:00

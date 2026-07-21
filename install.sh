@@ -124,6 +124,38 @@ for m in "${MODULES[@]}"; do
   fi
 done
 
+verify_module_outputs() {
+  local missing=0
+  local mod src_rel dest_spec dest expanded
+  for mod in "${MODULES[@]}"; do
+    local dest_file="$repo_root/modules/$mod/DEST"
+    [[ -f "$dest_file" ]] || continue
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      [[ -z "$line" || "$line" == \#* ]] && continue
+      IFS='|' read -r src_rel dest_spec _mode <<<"$line"
+      case "$dest_spec" in
+        ~/*) expanded="$HOME/${dest_spec#~/}" ;;
+        ~) expanded="$HOME" ;;
+        *) expanded="$dest_spec" ;;
+      esac
+      if [[ ! -e "$expanded" ]]; then
+        hf_err "missing after apply: $mod -> $expanded"
+        missing=$((missing + 1))
+      fi
+    done <"$dest_file"
+  done
+  if ((missing > 0)); then
+    hf_err "$missing expected module file(s) missing under \$HOME (check expand_dest / DEST paths)"
+    return 1
+  fi
+  hf_ok "module DEST outputs verified"
+  return 0
+}
+
+if [[ "$DRY_RUN" != "1" ]]; then
+  verify_module_outputs || failed=$((failed + 1))
+fi
+
 hf_section "Session startup"
 startup_src="$repo_root/session/hyprflux-session-start.sh"
 startup_dest="$HOME/.config/hypr/UserScripts/hyprflux-session-start.sh"

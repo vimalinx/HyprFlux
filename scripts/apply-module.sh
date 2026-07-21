@@ -25,11 +25,11 @@ fi
 
 expand_dest() {
   local dest="$1"
-  if [[ "$dest" == ~/* ]]; then
-    printf '%s\n' "$HOME/${dest#~/}"
-  else
-    printf '%s\n' "$dest"
-  fi
+  case "$dest" in
+    ~/*) printf '%s\n' "$HOME/${dest#~/}" ;;
+    ~) printf '%s\n' "$HOME" ;;
+    *) printf '%s\n' "$dest" ;;
+  esac
 }
 
 backup_if_needed() {
@@ -52,7 +52,7 @@ apply_dest_line() {
 
   if [[ ! -e "$src" ]]; then
     hf_warn "missing source in $module_name: $src_rel"
-    return 0
+    return 1
   fi
 
   if [[ "$dry_run" == "1" ]]; then
@@ -66,22 +66,52 @@ apply_dest_line() {
   chmod "$mode" "$dest" 2>/dev/null || true
 }
 
+write_applied_marker() {
+  local marker_dir="$HOME/.config/hypr/.hyprflux-modules"
+  local marker="$marker_dir/${module_name}.applied"
+  if [[ "$dry_run" == "1" ]]; then
+    hf_info "would write marker $marker"
+    return 0
+  fi
+  mkdir -p "$marker_dir"
+  {
+    printf 'module=%s\n' "$module_name"
+    printf 'applied_at=%s\n' "$(date -Is)"
+    printf 'repo=%s\n' "$repo_root"
+  } >"$marker"
+}
+
 if [[ -x "$module_dir/apply.sh" ]]; then
   if [[ "$dry_run" == "1" ]]; then
     hf_info "would run $module_name/apply.sh"
   else
     "$module_dir/apply.sh"
+    write_applied_marker
   fi
   exit 0
 fi
 
 if [[ -f "$module_dir/DEST" ]]; then
+  errors=0
+  copied=0
   while IFS= read -r line || [[ -n "$line" ]]; do
     [[ -z "$line" || "$line" == \#* ]] && continue
     IFS='|' read -r src_rel dest_spec mode <<<"$line"
-    apply_dest_line "$src_rel" "$dest_spec" "${mode:-644}"
+    if apply_dest_line "$src_rel" "$dest_spec" "${mode:-644}"; then
+      copied=$((copied + 1))
+    else
+      errors=$((errors + 1))
+    fi
   done <"$module_dir/DEST"
+  if ((errors > 0)); then
+    hf_err "$module_name: $errors missing source file(s)"
+    exit 1
+  fi
+  if ((copied > 0)); then
+    write_applied_marker
+  fi
   exit 0
 fi
 
-hf_warn "$module_name has no DEST or apply.sh (docs-only / snippet module)"
+hf_info "$module_name: docs-only (no DEST or apply.sh — merge snippets manually)"
+exit 0
