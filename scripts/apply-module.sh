@@ -107,12 +107,12 @@ merge_waybar_snippets() {
   python3 "$merge_py" "${snippets[@]}"
 }
 
-if [[ -x "$module_dir/apply.sh" ]]; then
+if [[ -f "$module_dir/apply.sh" ]]; then
   if [[ "$dry_run" == "1" ]]; then
     hf_info "would run $module_name/apply.sh"
     merge_waybar_snippets || true
   else
-    "$module_dir/apply.sh"
+    bash "$module_dir/apply.sh"
     merge_waybar_snippets || hf_warn "$module_name: waybar UserModules merge skipped/failed"
     write_applied_marker
   fi

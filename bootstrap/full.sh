@@ -105,6 +105,7 @@ chmod +x \
   "$repo_root/install.sh" \
   "$repo_root/scripts/"*.sh \
   "$repo_root/session/"*.sh
+find "$repo_root/modules" -name apply.sh -exec chmod +x {} +
 
 # Export China / mirror prefs for nested scripts.
 export HF_CN="${HF_CN:-0}"
