@@ -18,17 +18,26 @@ import argparse
 import fcntl
 import json
 import os
+import re
+import shlex
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-# Reuse the existing button's terminal-capture + idempotent-restore machinery
-# (zero changes to HyprSessionButton.py). Resolved via sys.path[0] = this dir.
+# The packaged files share one destination directory. In the repository they are
+# separate public modules, so expose that declared source directory before import.
+SOURCE_SESSION_MODULE = Path(__file__).resolve().parents[1] / "hypr-session-button"
+if SOURCE_SESSION_MODULE.is_dir():
+    sys.path.insert(0, str(SOURCE_SESSION_MODULE))
+
+# Reuse the existing button's terminal-capture + idempotent-restore machinery.
 from HyprSessionButton import (  # noqa: E402
     HYPRCTL,
+    SHELL,
     STATE_DIR,
+    TERMINAL,
     apply_geometry,
     atomic_write_json,
     build_client_entry,
@@ -38,6 +47,7 @@ from HyprSessionButton import (  # noqa: E402
     log,
     read_process_table,
     run,
+    stable_key,
     wait_for_new_client,
 )
 
@@ -58,6 +68,8 @@ RESTORE_PACE_SECONDS = 0.35
 # when the current session has >= 2 monitors. Honors TERMINAL_COMBOS_FORCE_MODE
 # for testing the eligibility path without replugging hardware.
 DEFAULT_SNAPSHOT_PATH = STATE_DIR / "desktop-session-snapshot.json"
+TMUX_SESSION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$")
+HYPR_WORKSPACE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,47}$")
 
 
 def current_monitor_mode() -> str:
@@ -199,6 +211,85 @@ def cmd_capture(name: str) -> dict[str, Any]:
         save_store(store)
     log(f"combos captured '{name}': {len(terminals)} terminals")
     return {"success": True, "captured": len(terminals), "name": name}
+
+
+def cmd_upsert_tmux(name: str, session: str, cwd: str, workspace: str, mode: str) -> dict[str, Any]:
+    """Register one declarative tmux terminal without observing other windows."""
+    if not name.strip() or len(name) > 96:
+        return {"success": False, "error": "组合名必须为 1 到 96 个字符"}
+    if not TMUX_SESSION.fullmatch(session):
+        return {"success": False, "error": "tmux session 名称不合法"}
+    if not HYPR_WORKSPACE.fullmatch(workspace):
+        return {"success": False, "error": "Hyprland 工作区名称不合法"}
+    working_directory = Path(cwd).expanduser().resolve()
+    if not working_directory.is_dir():
+        return {"success": False, "error": f"工作目录不存在: {working_directory}"}
+
+    tag = f"hyprflux-tmux-{stable_key(name, session)}"
+    inner = "exec " + shlex.join(["tmux", "new-session", "-A", "-s", session])
+    command = shlex.join([
+        TERMINAL,
+        "--toplevel-tag",
+        tag,
+        "-T",
+        f"tmux:{session}",
+        "-D",
+        str(working_directory),
+        SHELL,
+        "-lc",
+        inner,
+    ])
+    workspace_id = int(workspace) if workspace.isdigit() else None
+    launch = {
+        "type": "foot-tmux",
+        "cmd": command,
+        "cwd": str(working_directory),
+        "tag": tag,
+        "session": session,
+    }
+    terminal = {
+        "address": None,
+        "pid": None,
+        "class": "foot",
+        "initialClass": "foot",
+        "title": f"tmux:{session}",
+        "workspace": {"id": workspace_id, "name": workspace},
+        "monitor": None,
+        "floating": False,
+        "at": [],
+        "size": [],
+        "fullscreen": 0,
+        "pinned": False,
+        "xdgTag": tag,
+        "launch": launch,
+        "identity": stable_key("foot", "foot", f"tmux:{session}", workspace, command),
+    }
+    entry = {
+        "name": name.strip(),
+        "saved_at": _now(),
+        "mode": mode,
+        "source": "declarative-tmux",
+        "terminals": [terminal],
+    }
+    with _lock(True):
+        store = load_store()
+        combos = store["combos"]
+        for index, combo in enumerate(combos):
+            if combo.get("name") == entry["name"]:
+                combos[index] = entry
+                break
+        else:
+            combos.append(entry)
+        save_store(store)
+    log(f"combos registered tmux '{name}': session={session} workspace={workspace}")
+    return {
+        "success": True,
+        "name": entry["name"],
+        "session": session,
+        "workspace": workspace,
+        "mode": mode,
+        "terminal_count": 1,
+    }
 
 
 def cmd_restore(name: str) -> dict[str, Any]:
@@ -479,6 +570,12 @@ def main() -> int:
     p_open.add_argument("index", type=int)
     p_capture = sub.add_parser("capture", help="capture current terminals into a named combo")
     p_capture.add_argument("--name", required=True)
+    p_tmux = sub.add_parser("upsert-tmux", help="register exactly one tmux-backed terminal combo")
+    p_tmux.add_argument("--name", required=True)
+    p_tmux.add_argument("--session", required=True)
+    p_tmux.add_argument("--cwd", required=True)
+    p_tmux.add_argument("--workspace", required=True)
+    p_tmux.add_argument("--mode", choices=("single", "dual"), required=True)
     p_restore = sub.add_parser("restore", help="idempotently restore a named combo")
     p_restore.add_argument("name")
     p_delete = sub.add_parser("delete", help="delete a named combo")
@@ -503,6 +600,8 @@ def main() -> int:
     elif args.cmd == "capture":
         name = (args.name or "").strip()
         result = {"success": False, "error": "组合名不能为空"} if not name else cmd_capture(name)
+    elif args.cmd == "upsert-tmux":
+        result = cmd_upsert_tmux(args.name, args.session, args.cwd, args.workspace, args.mode)
     elif args.cmd == "restore":
         result = cmd_restore(args.name)
     elif args.cmd == "delete":

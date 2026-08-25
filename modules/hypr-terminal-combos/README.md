@@ -19,6 +19,11 @@ chmod +x ~/.config/hypr/UserScripts/TerminalCombos.py
 python3 ~/.config/hypr/UserScripts/TerminalCombos.py list
 python3 ~/.config/hypr/UserScripts/TerminalCombos.py capture --name "work"
 python3 ~/.config/hypr/UserScripts/TerminalCombos.py restore "work"
+python3 ~/.config/hypr/UserScripts/TerminalCombos.py upsert-tmux \
+  --name "AIOS project" --session "aios-project" --cwd "$PWD" --workspace 20 --mode dual
 ```
+
+`upsert-tmux` is the Worksite integration boundary. It writes a combination containing exactly
+one named tmux session and never captures unrelated terminal windows.
 
 State is stored under `~/.local/state/hypr/terminal-combos.json` by the script; do not hand-edit that file while a restore is running.
